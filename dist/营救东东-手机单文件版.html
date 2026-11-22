@@ -683,6 +683,263 @@ body.playing .topbar button:focus-visible,#hud button:focus-visible{outline-colo
   .signal-status strong{font-size:12px;letter-spacing:1px}
 }
 
+/* ==========================================================================
+   FIELD MANUAL · BEGINNER GUIDE
+   A paper field sheet pinned over the menu, with dark blueprint schematics
+   that borrow the in-game ice-blue HUD ink. Content scrolls inside the sheet;
+   header and launch actions stay reachable on desktop and short screens.
+   ========================================================================== */
+.guide-overlay{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at 50% 42%,rgba(42,34,24,.82),rgba(10,8,6,.95) 74%);backdrop-filter:blur(7px)}
+.guide-sheet{position:relative;display:flex;flex-direction:column;width:min(1080px,calc(100vw - 48px));height:min(830px,calc(100dvh - 48px));overflow:hidden;background:var(--p-paper-fill);border:2.5px solid var(--p-line);border-radius:5px 16px 6px 13px/14px 6px 16px 7px;box-shadow:10px 11px 0 rgba(8,7,5,.82),0 40px 110px rgba(0,0,0,.55);color:var(--p-ink);color-scheme:light;transform:rotate(-.18deg)}
+.guide-sheet::before{content:"";position:absolute;z-index:2;left:50%;top:-11px;width:108px;height:18px;margin-left:-54px;background:linear-gradient(90deg,#cbbda6,#b7a78f);border:1.5px solid var(--p-line);transform:rotate(-2.4deg);box-shadow:2px 2px 0 rgba(8,7,5,.55);pointer-events:none}
+.guide-sheet :focus-visible{outline-color:var(--p-rust)}
+.guide-head{position:relative;flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:31px 34px 19px 38px;border-bottom:2px solid rgba(23,19,14,.38)}
+.guide-head .eyebrow{color:var(--p-rust-deep);font-weight:700;letter-spacing:2.4px;font-size:9px}
+.guide-head .eyebrow::before{content:"";width:6px;height:6px;background:var(--p-rust);border:1.5px solid var(--p-line);transform:rotate(45deg)}
+.guide-head h2{font-family:var(--p-display);font-size:32px;font-weight:400;line-height:1.3;letter-spacing:1.2px;color:var(--p-ink);margin:11px 0 8px}
+.guide-head p{max-width:670px;margin:0;font-size:11.5px;line-height:1.75;letter-spacing:.4px;color:var(--p-ink-soft)}
+.guide-close{display:grid;place-items:center;flex:0 0 auto;width:38px;height:38px;margin-top:2px;font-size:27px;font-weight:300;line-height:1;color:var(--p-ink);background:var(--p-paper-hi);border:1.5px solid var(--p-line);border-radius:50% 45% 50% 46%;box-shadow:2px 2px 0 rgba(8,7,5,.55)}
+.guide-close:hover{background:#fff7e6;filter:none;transform:translate(1px,-1px)}
+.guide-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:20px 38px 30px;scrollbar-width:thin;scrollbar-color:#9c8b72 transparent;scrollbar-gutter:stable}
+.guide-scroll::-webkit-scrollbar{width:9px}.guide-scroll::-webkit-scrollbar-thumb{background:#a9967d;border:2px solid var(--p-paper-lo);border-radius:6px}.guide-scroll::-webkit-scrollbar-track{background:rgba(23,19,14,.06)}
+
+/* Quick strip */
+.guide-quick{display:grid;grid-template-columns:96px minmax(0,1fr);align-items:center;gap:16px;padding:12px 15px;background:rgba(104,116,70,.1);border:1.5px dashed rgba(23,19,14,.45);border-radius:3px 8px 4px 6px}
+.guide-tag{justify-self:start;padding:7px 9px;font-size:9px;font-weight:700;letter-spacing:1.4px;text-align:center;background:var(--p-paper-hi);border:2px solid var(--p-line);box-shadow:2px 3px 0 rgba(8,7,5,.18);transform:rotate(-1.2deg)}
+.guide-quick ol{display:flex;min-width:0;margin:0;padding:0;list-style:none}
+.guide-quick li{display:flex;min-width:0;flex:1;gap:7px;padding:0 11px;border-left:1px dashed rgba(23,19,14,.34)}
+.guide-quick li:first-child{padding-left:0;border-left:0}
+.guide-quick li>b{flex:0 0 auto;font-family:var(--p-hand);font-size:14px;line-height:1.1;color:var(--p-rust-deep)}
+.guide-quick li>span{font-size:10.5px;font-weight:700;line-height:1.45;color:var(--p-ink)}
+.guide-quick small{display:block;margin-top:4px;font-size:8px;font-weight:600;line-height:1.45;color:var(--p-ink-faint)}
+
+/* Shared section scaffolding */
+.guide-section{margin-top:27px;padding-top:20px;border-top:1.5px solid rgba(23,19,14,.3)}
+.guide-section-head{display:grid;grid-template-columns:46px minmax(0,1fr);gap:14px;margin-bottom:16px}
+.guide-section-head>span{padding-top:3px;border-top:2px solid var(--p-line);font-family:var(--p-hand);font-size:27px;line-height:1;color:var(--p-rust-deep)}
+.guide-section-head h3{margin:0 0 6px;font-family:var(--p-display);font-size:23px;font-weight:400;line-height:1.35;letter-spacing:.5px;color:var(--p-ink)}
+.guide-section-head p{margin:0;font-size:10.5px;line-height:1.75;letter-spacing:.25px;color:var(--p-ink-soft)}
+.guide-section-head p strong{color:var(--p-rust-deep)}
+
+/* Blueprint figures */
+.guide-figure{min-width:0;margin:0 0 15px}
+.guide-blueprint{padding:11px;background:radial-gradient(ellipse at 50% 38%,rgba(24,53,66,.72),rgba(8,21,29,.98) 72%),repeating-linear-gradient(0deg,rgba(169,232,255,.028) 0 1px,transparent 1px 4px);border:2px solid var(--p-line);border-radius:3px 8px 4px 6px;box-shadow:inset 0 0 48px rgba(2,10,15,.65),3px 4px 0 rgba(8,7,5,.45)}
+.guide-blueprint svg{display:block;width:100%;height:auto}
+.guide-figure figcaption{margin-top:5px;text-align:right;font-size:8.5px;letter-spacing:.9px;color:var(--p-ink-faint)}
+.g-line,.g-line-soft,.g-line-bright,.g-green-line,.g-bright-line{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.g-line{stroke:rgba(169,232,255,.6);stroke-width:1.2}
+.g-line-soft{stroke:rgba(169,232,255,.3);stroke-width:1}
+.g-line-bright{stroke:#dffafd;stroke-width:1.3}
+.g-green-line{stroke:#8de0ab;stroke-width:1.5}
+.g-bright-line{stroke:#e8fbff;stroke-width:1.2}
+.g-dash{stroke-dasharray:3 5}
+.g-box{fill:rgba(8,24,33,.42);stroke:rgba(169,232,255,.3);stroke-width:1}
+.g-fill{fill:rgba(169,232,255,.14)}
+.g-bright-fill{fill:#e8fbff}
+.g-dim-fill{fill:rgba(169,232,255,.58)}
+.g-rust-fill{fill:#d07a58}
+.g-green-fill{fill:#8de0ab}
+.g-red-fill{fill:#ff8f7d}
+.g-text{font-family:var(--p-num);font-size:11px;letter-spacing:.55px;fill:rgba(169,232,255,.85)}
+.g-num{font-family:var(--p-num);font-variant-numeric:tabular-nums;letter-spacing:.5px;fill:#e8fbff}
+.g-bright{fill:#e8fbff}
+.g-dim{fill:rgba(169,232,255,.72)}
+.g-faint{fill:rgba(169,232,255,.5)}
+.g-red{fill:#ff8f7d}
+.g-green{fill:#8de0ab}
+.g-wave{opacity:.65}
+.g-meter path{stroke:rgba(169,232,255,.42);stroke-width:2.4;stroke-linecap:round}
+.g-eta-box rect{fill:rgba(8,24,33,.4);stroke:rgba(169,232,255,.38);stroke-width:1}
+.g-eta-box path{fill:none;stroke:rgba(169,232,255,.26);stroke-width:1}
+.g-tag rect{fill:#0d2029;stroke:rgba(169,232,255,.4);stroke-width:1}
+.g-pin circle{fill:var(--p-paper-hi);stroke:var(--p-line);stroke-width:1.8}
+.g-pin text{fill:var(--p-ink);font-family:var(--p-num);font-size:10px;font-weight:700}
+
+/* HUD legend */
+.guide-hud-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 27px;margin:2px 0 0;padding:0;list-style:none}
+.guide-hud-legend li{display:grid;grid-template-columns:25px minmax(0,1fr);gap:9px;padding:10px 0;border-top:1px dashed rgba(23,19,14,.3)}
+.guide-hud-legend li>b{display:grid;place-items:center;width:22px;height:22px;font-family:var(--p-num);font-size:10px;font-weight:700;line-height:1;color:var(--p-cream);background:var(--p-rust);border:1.5px solid var(--p-line);border-radius:50%;box-shadow:1px 1px 0 rgba(8,7,5,.4)}
+.guide-hud-legend strong{display:block;margin-bottom:4px;font-size:11px;line-height:1.45;color:var(--p-ink)}
+.guide-hud-legend p{margin:0;font-size:9.5px;line-height:1.65;color:var(--p-ink-faint)}
+
+/* Three-countdown explanation */
+.guide-eta-grid{display:grid;grid-template-columns:1fr;gap:14px;align-items:start;min-width:0}
+.guide-eta-grid>*{min-width:0}
+.guide-eta-section .guide-figure{margin:0}
+.guide-eta-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.guide-eta-list article{padding:11px 13px 10px;background:rgba(242,233,216,.34);border:1.5px solid rgba(23,19,14,.42);border-radius:2px 6px 3px 5px;box-shadow:2px 2px 0 rgba(8,7,5,.1)}
+.eta-code{display:inline-block;margin-right:6px;padding:2px 5px;font:700 8px var(--p-num);letter-spacing:1.1px;vertical-align:1px;background:var(--p-paper-hi);border:1.5px solid var(--p-line);color:var(--p-ink-soft)}
+.eta-code.own{color:var(--p-rust-deep);background:#f2ddcd}
+.eta-code.plan{color:var(--p-olive-deep);background:#e4e4ce}
+.guide-eta-list h4{display:inline;margin:0;font-size:12px;color:var(--p-ink)}
+.guide-eta-list p{margin:7px 0 5px;font-size:9.5px;line-height:1.65;color:var(--p-ink-soft)}
+.guide-eta-list strong{font-size:9.5px;line-height:1.6;color:var(--p-olive-deep)}
+.guide-callout{margin-top:13px;padding:11px 14px;background:rgba(187,79,49,.08);border-left:3px solid var(--p-rust);font-size:10px;line-height:1.8;color:var(--p-ink-soft)}
+.guide-callout b{color:var(--p-ink)}
+.guide-callout span{display:inline-block;margin-top:4px;font-size:9px;color:var(--p-ink-faint)}
+
+/* Four-step sequence */
+.guide-sequence{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.guide-step{position:relative;min-width:0;padding:9px 9px 11px;background:rgba(242,233,216,.3);border:1.5px solid rgba(23,19,14,.5);border-radius:2px 7px 3px 6px;box-shadow:2px 3px 0 rgba(8,7,5,.13)}
+.guide-step-figure{margin-bottom:8px;overflow:hidden;background:#0d1f28;border:1.5px solid var(--p-line);border-radius:2px}
+.guide-step-figure svg{display:block;width:100%;height:auto}
+.guide-step>span{position:absolute;top:16px;left:17px;display:grid;place-items:center;width:23px;height:23px;font:700 9px var(--p-num);color:var(--p-cream);background:var(--p-rust);border:1.5px solid var(--p-line);border-radius:50%;box-shadow:1px 1px 0 rgba(8,7,5,.5)}
+.guide-step h4{margin:0 0 4px;font-size:11px;color:var(--p-ink)}
+.guide-step p{margin:0;font-size:8.5px;line-height:1.6;color:var(--p-ink-faint)}
+.guide-notes{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:11px}
+.guide-notes p{flex:1 1 270px;margin:0;padding-left:10px;border-left:2px solid rgba(23,19,14,.28);font-size:9px;line-height:1.65;color:var(--p-ink-faint)}
+.guide-notes b{color:var(--p-rust-deep)}
+
+/* Key cards */
+.guide-keys{display:grid;grid-template-columns:1fr 1fr;gap:17px}
+.guide-keycard{padding:12px 14px 13px;background:rgba(242,233,216,.26);border:1.5px solid rgba(23,19,14,.42);border-radius:3px 7px 4px 6px}
+.guide-keycard h4{display:flex;align-items:baseline;gap:8px;margin:0 0 8px;padding-bottom:7px;border-bottom:1.5px dashed rgba(23,19,14,.36);font-size:12.5px;color:var(--p-ink)}
+.guide-keycard h4 small{font-size:7.5px;font-weight:600;letter-spacing:.9px;color:var(--p-ink-faint)}
+.guide-keycard dl{display:grid;grid-template-columns:1fr 1fr;gap:0 15px;margin:0}
+.guide-keycard dl>div{display:flex;align-items:baseline;justify-content:space-between;gap:6px;min-width:0;padding:4.5px 0;border-top:1px solid rgba(23,19,14,.14)}
+.guide-keycard dt{flex:0 0 auto;font-size:9px;font-weight:700;line-height:1.5;color:var(--p-ink);white-space:nowrap}
+.guide-keycard dd{min-width:0;margin:0;font-size:8px;line-height:1.5;text-align:right;color:var(--p-ink-faint)}
+.guide-keycard kbd{min-width:18px;margin-right:2px;padding:1px 4px;font-size:8px}
+.guide-note-small{margin:8px 0 0;padding-left:10px;border-left:2px solid rgba(23,19,14,.28);font-size:8.5px;line-height:1.65;color:var(--p-ink-faint)}
+
+/* Route and strata */
+.guide-route{margin:1px 0 14px;padding:12px 14px 13px;background:rgba(242,233,216,.26);border:1.5px solid rgba(23,19,14,.4);border-radius:2px 7px 3px 5px}
+.guide-route-labels{display:flex;justify-content:space-between;margin-bottom:6px;font:700 8px var(--p-num);letter-spacing:.6px;color:var(--p-ink-faint)}
+.guide-route-bar{display:flex;gap:3px;margin-top:4px}
+.guide-route-bar i{display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden;padding:6px 8px;border:1.5px solid var(--p-line);font-style:normal}
+.guide-route-bar b{font-size:9px;line-height:1.35;white-space:nowrap}
+.guide-route-bar small{margin-top:2px;font-size:7.5px;line-height:1.3;white-space:nowrap;opacity:.72}
+.guide-route-bar .single{background:rgba(104,116,70,.28)}
+.guide-route-bar .silent{background:repeating-linear-gradient(135deg,rgba(242,233,216,.8) 0 7px,rgba(217,203,179,.72) 7px 14px)}
+.guide-route-bar .five{background:rgba(187,79,49,.24)}
+.guide-route-bar .red{background:rgba(187,79,49,.19)}
+.guide-route-bar .blue{background:rgba(93,126,142,.22)}
+.guide-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.guide-stages article{padding-top:8px;border-top:2px solid rgba(23,19,14,.4)}
+.guide-stages article>span{font-family:var(--p-hand);font-size:12px;font-weight:700;color:var(--p-rust-deep)}
+.guide-stages h4{margin:3px 0 4px;font-size:11px;color:var(--p-ink)}
+.guide-stages p{margin:0;font-size:9px;line-height:1.65;color:var(--p-ink-faint)}
+
+/* Mistakes */
+.guide-mistakes ul{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;margin:0;padding:0;list-style:none}
+.guide-mistakes li{position:relative;padding:8px 0 9px 25px;border-top:1px dashed rgba(23,19,14,.3);font-size:9.5px;line-height:1.6}
+.guide-mistakes li::before{content:"×";position:absolute;left:0;top:7px;display:grid;place-items:center;width:17px;height:17px;font-size:11px;font-weight:700;line-height:1;color:var(--p-cream);background:var(--p-rust);border:1.5px solid var(--p-line);border-radius:50%}
+.guide-mistakes li b{display:block;margin-bottom:1px;font-size:10px;color:var(--p-ink)}
+.guide-mistakes li span{color:var(--p-ink-faint)}
+
+/* Pinned launch actions */
+.guide-actions{position:relative;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 34px 15px 38px;border-top:2px solid rgba(23,19,14,.4);background:linear-gradient(180deg,rgba(214,201,181,.16),rgba(214,201,181,.42))}
+.guide-actions>span{font-size:8.5px;line-height:1.5;letter-spacing:.8px;color:var(--p-ink-faint)}
+.guide-hint-touch{display:none}
+body.touch-mode .guide-hint-desktop{display:none}
+body.touch-mode .guide-hint-touch{display:inline}
+.guide-actions>div{display:flex;align-items:center;gap:12px}
+.guide-actions button{width:auto;min-width:0;margin:0;padding:10px 15px;font-size:10px;line-height:1.25;letter-spacing:1.3px}
+.guide-actions .primary{background:#c8b598;border:2px solid var(--p-line);box-shadow:3px 4px 0 rgba(8,7,5,.62);color:#18120d;font-weight:700}
+.guide-actions .primary:hover{background:#e0cbaa;filter:none;transform:translate(1px,-1px)}
+.guide-actions .secondary{background:transparent;border:2px solid var(--p-line);box-shadow:2px 3px 0 rgba(8,7,5,.4);color:var(--p-ink);font-weight:700}
+.guide-actions .secondary:hover{background:rgba(23,19,14,.06);filter:none;transform:translate(1px,-1px)}
+@supports(padding:max(0px)){.guide-actions{padding-bottom:max(15px,env(safe-area-inset-bottom))}}
+
+@media(max-width:1100px){
+  .guide-overlay{padding:16px}
+  .guide-sheet{width:calc(100vw - 32px);height:min(820px,calc(100dvh - 32px))}
+  .guide-head{padding:27px 27px 17px 30px}
+  .guide-head h2{font-size:29px}
+  .guide-scroll{padding:18px 30px 26px}
+  .guide-quick{grid-template-columns:82px minmax(0,1fr);gap:12px;padding:10px 12px}
+  .guide-quick li{padding:0 8px}
+  .guide-quick li>span{font-size:9.5px}
+  .guide-quick small{font-size:7.5px}
+  .guide-actions{padding:13px 27px 14px 30px}
+}
+@media(max-width:920px){
+  .guide-hud-legend{grid-template-columns:1fr 1fr}
+  .guide-quick{grid-template-columns:1fr;gap:8px}
+  .guide-tag{justify-self:start}
+  .guide-quick ol{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0}
+  .guide-quick li{padding:0 9px}
+  .guide-quick li:nth-child(4){padding-left:9px;border-left:1px dashed rgba(23,19,14,.34)}
+  .guide-sequence{grid-template-columns:1fr 1fr}
+  .guide-keys{grid-template-columns:1fr}
+  .guide-stages{grid-template-columns:1fr;gap:9px}
+  .guide-stages article{display:grid;grid-template-columns:28px 150px minmax(0,1fr);align-items:baseline;gap:8px;padding-top:7px}
+  .guide-stages h4{margin:0}
+  .guide-stages p{font-size:9px}
+}
+@media(max-height:760px){
+  .guide-overlay{padding:12px}
+  .guide-sheet{width:calc(100vw - 24px);height:calc(100dvh - 24px)}
+  .guide-head{padding:15px 23px 10px 26px}
+  .guide-head h2{font-size:22px;margin:5px 0 4px}
+  .guide-head p{font-size:10px;line-height:1.55}
+  .guide-scroll{padding:12px 26px 20px}
+  .guide-section{margin-top:18px;padding-top:13px}
+  .guide-section-head{margin-bottom:11px}
+  .guide-section-head h3{font-size:19px}
+  .guide-quick{padding:8px 11px}
+  .guide-actions{padding:9px 26px;padding-bottom:max(9px,env(safe-area-inset-bottom))}
+  .guide-actions button{padding:8px 12px}
+  .guide-figure figcaption{font-size:8px}
+}
+@media(max-width:720px){
+  .guide-overlay{padding:8px}
+  .guide-sheet{width:calc(100vw - 16px);height:calc(100dvh - 16px);transform:none;border-radius:4px 10px 5px 9px}
+  .guide-head{padding:17px 16px 12px 18px;gap:12px}
+  .guide-head .eyebrow{font-size:8px;letter-spacing:1.8px}
+  .guide-head h2{font-size:23px;line-height:1.3;margin:6px 0 5px}
+  .guide-head p{font-size:9.5px;line-height:1.6}
+  .guide-close{width:33px;height:33px;font-size:24px}
+  .guide-scroll{padding:14px 18px 22px;scrollbar-gutter:auto}
+  .guide-quick ol{grid-template-columns:1fr 1fr}
+  .guide-quick li:nth-child(3){padding-left:0;border-left:0}
+  .guide-quick li:nth-child(5){grid-column:1/-1;padding-left:0;border-left:0;border-top:1px dashed rgba(23,19,14,.2);padding-top:6px}
+  .guide-section{margin-top:20px;padding-top:14px}
+  .guide-section-head{grid-template-columns:31px minmax(0,1fr);gap:9px;margin-bottom:12px}
+  .guide-section-head>span{font-size:21px}
+  .guide-section-head h3{font-size:19px}
+  .guide-section-head p{font-size:9.5px;line-height:1.7}
+  .guide-blueprint{padding:6px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#5b7b88 transparent}
+  .guide-blueprint svg{min-width:700px}
+  .guide-blueprint::-webkit-scrollbar{height:7px}.guide-blueprint::-webkit-scrollbar-thumb{background:#5b7b88;border:2px solid #0d1f28;border-radius:5px}.guide-blueprint::-webkit-scrollbar-track{background:rgba(169,232,255,.06)}
+  .guide-figure{display:flex;flex-direction:column}
+  .guide-figure figcaption{order:-1;margin:0 0 5px;text-align:left;font-weight:700;color:var(--p-rust-deep)}
+  .guide-figure figcaption::before{content:"左右滑动看图 · "}
+  .guide-hud-legend{grid-template-columns:1fr;gap:0}
+  .guide-hud-legend li{padding:8px 0}
+  .guide-eta-list{grid-template-columns:1fr}
+  .guide-eta-list article{padding:10px 11px}
+  .guide-callout{font-size:9.5px;padding:10px 11px}
+  .guide-sequence{grid-template-columns:1fr 1fr;gap:9px}
+  .guide-keys{gap:12px}
+  .guide-keycard dl{grid-template-columns:1fr}
+  .guide-keycard dl>div{padding:4px 0}
+  .guide-stages article{grid-template-columns:24px minmax(0,1fr);gap:3px 7px}
+  .guide-stages h4{font-size:10.5px}
+  .guide-stages p{grid-column:2}
+  .guide-mistakes ul{grid-template-columns:1fr}
+  .guide-actions{flex-direction:column-reverse;align-items:stretch;gap:8px;padding:10px 18px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  .guide-actions>span{text-align:center;font-size:8px}
+  .guide-actions>div{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .guide-actions button{width:100%;justify-content:center;padding:10px 8px;font-size:9.5px;text-align:center}
+}
+@media(max-height:520px){
+  .guide-head{padding:12px 22px 9px 26px;align-items:center}
+  .guide-head p{display:none}
+  .guide-head h2{font-size:20px;margin:4px 0 0}
+  .guide-head .eyebrow{font-size:8px}
+  .guide-close{width:32px;height:32px;font-size:23px;margin-top:0}
+  .guide-scroll{padding-top:10px}
+}
+@media(max-width:470px){
+  .guide-head p{display:none}
+  .guide-head h2{font-size:21px}
+  .guide-sequence{grid-template-columns:1fr}
+  .guide-actions>div{grid-template-columns:1fr}
+  .guide-actions .primary{order:-1}
+}
+@media(prefers-reduced-motion:reduce){.guide-sheet{transform:none}}
+
 </style>
 <style data-source="pause-map.css">
 /* Frozen pause map: the radar canvas keeps its data colours, while every
@@ -1421,7 +1678,7 @@ body.touch-mode .toast{
         <button id="continueBtn" class="secondary" hidden>继续上次行动 <span>↗</span></button>
         <button id="assistBtn" class="secondary assist-entry" aria-haspopup="dialog"><span class="entry-name">老君的法宝（加强版）<small>难度辅助</small></span><span id="assistStatus">未启用</span></button>
       </nav>
-      <div class="menu-secondary"><button id="tutorialBtn">1 km 安全教学 <span>↗</span></button><button id="fiveBtn">五钟试练 <span>↗</span></button></div>
+      <div class="menu-secondary"><button id="guideBtn">新手教程 <span>↗</span></button><button id="tutorialBtn">1 km 安全教学 <span>↗</span></button><button id="fiveBtn">五钟试练 <span>↗</span></button></div>
       <div class="mission-facts"><div><strong id="menuDistance">16<small>km</small></strong><span>行动距离</span></div><div><strong id="menuJumps">320<small>跳</small></strong><span>参考跳数</span></div><div><strong id="menuLives">1<small>次</small></strong><span>扫描耐受</span></div></div>
       <p class="menu-note" id="menuAssistNote">正常难度 · 所有辅助关闭<br>鼠标与键盘 · 离线游玩</p>
     </div>
@@ -1504,6 +1761,196 @@ body.touch-mode .toast{
   </section>
   <section id="help" class="dialog" hidden><div class="help-card"><span class="eyebrow">只要记住一跳</span><h2>等波。开洞。封住来路。</h2><div class="help-flow keyboard-help"><div><b>01</b><h3>找到下一处落点</h3><p>WASD 在洞内走动，空格真实起跳。开始后移动鼠标即可转头；自动锁定失败时照常移动，点击画面重试锁定，按住右键可拖出画面继续转头。V 重试锁定，滚轮调开洞斜距（准星旁的标签实时显示距离）。红球只推荐位置，不会替你开洞。</p></div><div><b>02</b><h3>看到亮蓝，再按左键</h3><p>首 1 km 安全教学没有探测，随时左键开洞，无需填充物。进入探测范围后，建议等亮蓝再开；提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。黑门从一点展开，约 0.3 秒后打开。</p></div><div><b>03</b><h3>按 F，走近并跳进黑门</h3><p>1 / 2 切换红袋 / 蓝袋，F 丢填充物，落地 1 秒后封洞；岩层从外到内是纹白岩 → 金刚岩 → 纹白岩（16–10 / 10–6 / 6–0 km），纹白岩用红袋、金刚岩用蓝袋，换层后要换袋。入口稍微悬空，走近后按空格、向前跳入；远处原地跳不会传送。出口在新洞上方；穿过后的旧洞口约 0.3 秒后收拢消失。门开低时，1.5 秒内按鼠标中键原地补洞。</p></div></div><div class="help-flow touch-help"><div><b>01</b><h3>左手摇杆，右手转向</h3><p>左下滑动虚拟摇杆移动，右侧画面拖动转头。摇杆推多少走多快，松手立即停下；两根手指可同时操作。横屏视野更宽，推荐横屏游玩。</p></div><div><b>02</b><h3>看到亮蓝，再点开洞</h3><p>底部“＋ / −”调开洞距离（0–58 m），准星对准推荐点。安全窗口打开时“开洞”亮蓝，再点右下大按钮。提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。</p></div><div><b>03</b><h3>填充、跳跃、补洞</h3><p>门开后点“填充”丢下当前袋，点“跳跃”跳入黑门；底部切换红袋 / 蓝袋。门开低时“补洞”会闪烁，1.5 秒内点它。按住“快进”加速等待；右上暂停会冻结所有计时。</p></div></div><p class="help-note touch-help">触屏设置位于“老君的法宝（加强版） → 操作方式”，可强制切换自动 / 键鼠 / 触屏。左摇杆与右视角可同时使用；松手、暂停或切到后台都会清空输入。触屏下仍保留 Esc 暂停与 H 帮助。</p>
 <p class="help-note keyboard-help">三个阶段对应三次事件：单钟持续到 6 km；对方察觉后停机，静默段快速推进；到 1.5 km 五钟逐台重启，波前会先在岩层里走一段路，再进入扫描。Shift 只加速等待，临近信号自动恢复原速。静默段不需要填充物。Esc 暂停、释放鼠标并冻结所有计时，继续后重新进入视角控制；生命耗尽后须开始新行动，继续存档不会恢复生命。独立教学为完整 1 km、推荐 20 跳，不受缩距辅助影响。<br>实际扫描波与空洞球体相交才会命中；HUD 仅给出建议，五个源头高度参与距离计算。320 跳为推荐路线，偏离后推荐点会重新校验可达性。</p><button id="closeHelp" class="primary">明白了 <span>→</span></button></div></section>
+  <section id="guide" class="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" hidden>
+    <div class="guide-sheet">
+      <header class="guide-head">
+        <div>
+          <span class="eyebrow">行动前必读 / FIELD MANUAL 07</span>
+          <h2 id="guideTitle">第一次下洞，先看这一页。</h2>
+          <p>不用背下来。记住「等绿、开洞、丢袋、跳入」四个词，其余现场看 HUD。</p>
+        </div>
+        <button id="closeGuide" class="guide-close" type="button" aria-label="关闭新手教程">×</button>
+      </header>
+      <div class="guide-scroll" id="guideScroll">
+        <div class="guide-quick" aria-label="五步速览">
+          <span class="guide-tag">10 秒速览</span>
+          <ol>
+            <li><b>01</b><span>对准推荐点<small>看准星旁的“推荐新洞 B”</small></span></li>
+            <li><b>02</b><span>等它变绿<small>窗口没开就别按左键</small></span></li>
+            <li><b>03</b><span>左键开洞<small>0–58 m，准星标签会报距离</small></span></li>
+            <li><b>04</b><span>F 丢袋再跳<small>落地约 1 秒封洞</small></span></li>
+            <li><b>05</b><span>走进黑门起跳<small>远处原地跳不会传送</small></span></li>
+          </ol>
+        </div>
+
+        <section class="guide-section">
+          <div class="guide-section-head"><span>01</span><div><h3>先认画面：HUD 的六个位置</h3><p>游戏中所有信息都直接贴在画面上。先记住左右两条边、中间一个准星、下方三道倒数。</p></div></div>
+          <figure class="guide-figure">
+            <div class="guide-blueprint">
+              <svg viewBox="0 0 920 500" role="img" aria-label="HUD 布局示意：左上路线与剩余里程，右上岩层与波源，中央准星与推荐点，左下信号与快进，中下三道波前倒数，右下填充物与封洞">
+                <defs><pattern id="guideHudGrid" width="46" height="46" patternUnits="userSpaceOnUse"><path d="M46 0H0V46" fill="none" stroke="rgba(169,232,255,.07)" stroke-width="1"/></pattern></defs>
+                <rect width="920" height="500" fill="url(#guideHudGrid)"/>
+                <path class="g-line-soft" d="M34 80V36h44M886 80V36h-44M34 420v44h44M886 420v44h-44"/>
+                <g class="g-box">
+                  <rect x="48" y="64" width="202" height="100"/>
+                  <rect x="670" y="64" width="202" height="90"/>
+                  <rect x="48" y="336" width="188" height="94"/>
+                  <rect x="704" y="336" width="168" height="94"/>
+                  <rect x="506" y="150" width="258" height="56"/>
+                </g>
+                <text x="62" y="84" class="g-text g-faint">第一段 / 单钟扫描</text>
+                <text x="62" y="118" class="g-num g-bright" font-size="27">16.00</text><text x="148" y="118" class="g-text g-dim">km</text>
+                <text x="62" y="139" class="g-text g-faint">000 / 320 参考跳</text>
+                <path d="M62 150h172" class="g-line-soft"/><path d="M62 150h58" class="g-line-bright"/>
+                <text x="62" y="165" class="g-text g-faint" font-size="8">16 km</text><text x="124" y="165" class="g-text g-faint" font-size="8">6</text><text x="174" y="165" class="g-text g-faint" font-size="8">1.5</text><text x="226" y="165" class="g-text g-faint" font-size="8" text-anchor="end">0</text>
+                <text x="686" y="84" class="g-text g-faint">岩层 / STRATUM</text><text x="856" y="86" class="g-text g-bright" font-size="15" text-anchor="end">纹白岩</text>
+                <text x="686" y="107" class="g-text g-dim">1 个源头 · 20 s 周期</text><text x="686" y="125" class="g-text g-faint">开洞高度 +4.5 m</text><text x="686" y="143" class="g-text g-faint" font-size="8.5">岩层决定红袋 / 蓝袋</text>
+                <g transform="translate(460 224)">
+                  <path d="M0-18v7M0 11v7M-18 0h7M11 0h7" class="g-line-bright"/>
+                  <rect x="-3.5" y="-3.5" width="7" height="7" transform="rotate(45)" class="g-line-bright"/>
+                  <rect x="-32" y="-32" width="64" height="64" class="g-line-soft g-dash"/>
+                  <path d="M16-16l30-28" class="g-line-soft g-dash"/>
+                </g>
+                <g transform="translate(526 166)"><rect x="0" y="2" width="7" height="7" transform="rotate(45)" class="g-rust-fill"/><text x="16" y="10" class="g-text g-bright">推荐新洞 B</text></g>
+                <text x="542" y="194" class="g-num g-dim" font-size="13">38.4 m · 2.1 s 后可开洞</text>
+                <text x="62" y="354" class="g-text g-faint">撼地钟 / SCAN FIELD</text>
+                <rect x="62" y="369" width="6" height="6" transform="rotate(45 65 372)" class="g-dim-fill"/>
+                <text x="76" y="378" class="g-text g-bright" font-size="12">等待安全开洞时机</text>
+                <g class="g-meter"><path d="M62 394v9M68 394v14M74 394v7M80 394v16M86 394v11M92 394v18M98 394v8M104 394v14M110 394v6M116 394v12M122 394v9M128 394v16M134 394v7M140 394v11M146 394v5M152 394v14M158 394v9M164 394v17M170 394v8M176 394v12M182 394v6M188 394v15M194 394v9M200 394v12M206 394v6M212 394v14M218 394v8"/></g>
+                <text x="62" y="422" class="g-text g-faint" font-size="8.5">按住 Shift 快进等待 »</text>
+                <text x="718" y="354" class="g-text g-faint">填充物 / INFINITE</text>
+                <path d="M720 372h15l3 20h-21z" class="g-fill g-line"/><path d="M724 372c0-5 7-5 7 0" class="g-line"/>
+                <text x="746" y="384" class="g-text g-bright" font-size="11">纹白岩 · 红袋</text>
+                <text x="718" y="406" class="g-text g-faint" font-size="8.5">1 红袋 · 2 蓝袋</text><text x="718" y="422" class="g-text g-faint" font-size="8.5">落地 1 s 后封洞</text>
+                <g class="g-eta-box"><rect x="292" y="368" width="340" height="102"/><path d="M306 394h312" class="g-line-soft"/><path d="M402 400v58M510 400v58" class="g-line-soft"/></g>
+                <text x="306" y="386" class="g-text g-faint" font-size="8.5">下一波到达 / WAVE ETA</text>
+                <text x="306" y="412" class="g-text g-dim" font-size="9.5">当前洞 <tspan class="g-faint" font-size="7.5">OWN</tspan></text>
+                <text x="414" y="412" class="g-text g-dim" font-size="9.5">光标落点 <tspan class="g-faint" font-size="7.5">CURSOR</tspan></text>
+                <text x="522" y="412" class="g-text g-dim" font-size="9.5">推荐位置 <tspan class="g-faint" font-size="7.5">PLAN</tspan></text>
+                <text x="306" y="440" class="g-num g-red" font-size="23">1.2</text><text x="342" y="440" class="g-text g-faint" font-size="8">s</text>
+                <text x="414" y="440" class="g-num g-bright" font-size="23">3.6</text><text x="450" y="440" class="g-text g-faint" font-size="8">s</text>
+                <text x="522" y="440" class="g-num g-green" font-size="23">7.4</text><text x="558" y="440" class="g-text g-faint" font-size="8">s</text>
+                <text x="306" y="458" class="g-text g-faint" font-size="8">三个点 · 三份真实波前 · 各算各的</text>
+                <g class="g-pin" transform="translate(250 64)"><circle r="10"/><text y="3.5" text-anchor="middle">1</text></g>
+                <g class="g-pin" transform="translate(872 64)"><circle r="10"/><text y="3.5" text-anchor="middle">2</text></g>
+                <g class="g-pin" transform="translate(764 206)"><circle r="10"/><text y="3.5" text-anchor="middle">3</text></g>
+                <g class="g-pin" transform="translate(236 336)"><circle r="10"/><text y="3.5" text-anchor="middle">4</text></g>
+                <g class="g-pin" transform="translate(292 368)"><circle r="10"/><text y="3.5" text-anchor="middle">5</text></g>
+                <g class="g-pin" transform="translate(872 336)"><circle r="10"/><text y="3.5" text-anchor="middle">6</text></g>
+              </svg>
+            </div>
+            <figcaption>HUD 布局示意 · 实际数字与标签随行动实时变化</figcaption>
+          </figure>
+          <ol class="guide-hud-legend">
+            <li><b>1</b><div><strong>左上 · 路线与进度</strong><p>剩余公里、参考跳数和阶段刻度。数字贴近 0，冬冬就在前面。</p></div></li>
+            <li><b>2</b><div><strong>右上 · 岩层与波源</strong><p>当前岩层决定红袋或蓝袋；下方是波源数量、周期与开洞高差。</p></div></li>
+            <li><b>3</b><div><strong>中央 · 准星与推荐点</strong><p>准星旁的标签给出推荐落点距离和“多久后可开洞”；变绿就能开。</p></div></li>
+            <li><b>4</b><div><strong>左下 · 信号与快进</strong><p>显示当前扫描状态。按住 Shift 或“快进”加速等待，临近信号会自动恢复原速。</p></div></li>
+            <li><b>5</b><div><strong>中下 · 三道波前倒数</strong><p>当前洞、光标落点、推荐位置，各自还有几秒被下一道真实波前扫到。下一节专讲。</p></div></li>
+            <li><b>6</b><div><strong>右下 · 填充袋</strong><p>1 / 2 换袋，F 丢袋。落地约 1 秒封洞；门开低时用中键补洞。</p></div></li>
+          </ol>
+        </section>
+
+        <section class="guide-section guide-eta-section">
+          <div class="guide-section-head"><span>02</span><div><h3>中间下方三个倒数，到底在倒数什么</h3><p>它们不是“波多久来一次”的周期，也不是全场统一的倒计时。它们回答的是同一个问题：<strong>下一道真实扫描波，还有几秒碰到这个点。</strong></p></div></div>
+          <div class="guide-eta-grid">
+            <figure class="guide-figure">
+              <div class="guide-blueprint">
+                <svg viewBox="0 0 900 360" role="img" aria-label="三道波前倒数示意：同一个撼地钟发出的波，到当前洞、光标落点和推荐位置的距离不同，所以三个倒数不同">
+                  <defs><pattern id="guideEtaGrid" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M44 0H0V44" fill="none" stroke="rgba(169,232,255,.07)" stroke-width="1"/></pattern></defs>
+                  <rect width="900" height="360" fill="url(#guideEtaGrid)"/>
+                  <g transform="translate(80 190)">
+                    <circle r="150" class="g-wave g-line-soft"/>
+                    <circle r="260" class="g-wave g-line-soft"/>
+                    <circle r="370" class="g-wave g-line"/>
+                    <circle r="480" class="g-wave g-line-soft"/>
+                    <circle r="590" class="g-wave g-line-soft g-dash"/>
+                    <rect x="-11" y="-11" width="22" height="22" transform="rotate(45)" class="g-line-bright g-fill"/>
+                    <circle r="4" class="g-bright-fill"/>
+                  </g>
+                  <text x="80" y="248" text-anchor="middle" class="g-text g-faint" font-size="10">撼地钟 / 波源</text>
+                  <path d="M300 255L80 190M470 205L80 190M640 105L80 190" class="g-line-soft g-dash"/>
+                  <path d="M230 58c34-18 72-22 108-12" class="g-line-soft"/>
+                  <path d="M334 38l8 8-11 4" class="g-line-soft"/>
+                  <text x="238" y="44" class="g-text g-faint" font-size="8.5">波前向外</text>
+                  <g transform="translate(300 255)"><rect x="-5" y="-5" width="10" height="10" transform="rotate(45)" class="g-red-fill g-line"/><circle cx="0" cy="0" r="2" class="g-bright-fill"/></g>
+                  <g transform="translate(470 205)"><path d="M0-12v5M0 7v5M-12 0h5M7 0h5" class="g-bright-line"/><rect x="-3" y="-3" width="6" height="6" transform="rotate(45)" class="g-line-bright"/></g>
+                  <g transform="translate(640 105)"><rect x="-7" y="-7" width="14" height="14" transform="rotate(45)" class="g-green-line"/><circle r="2.5" class="g-green-fill"/></g>
+                  <g class="g-tag" transform="translate(250 286)"><rect width="182" height="46"/><text x="10" y="18" class="g-text g-bright" font-size="10.5">当前洞 <tspan class="g-faint" font-size="7.5">OWN</tspan></text><text x="10" y="36" class="g-red" font-size="12">1.2 s · 波快到了</text></g>
+                  <g class="g-tag" transform="translate(420 236)"><rect width="194" height="46"/><text x="10" y="18" class="g-text g-bright" font-size="10.5">光标落点 <tspan class="g-faint" font-size="7.5">CURSOR</tspan></text><text x="10" y="36" class="g-num g-bright" font-size="12">3.6 s · 还在安全窗内</text></g>
+                  <g class="g-tag" transform="translate(590 34)"><rect width="246" height="50"/><rect x="0" y="0" width="4" height="50" class="g-green-fill"/><text x="14" y="19" class="g-text g-bright" font-size="10.5">推荐位置 <tspan class="g-faint" font-size="7.5">PLAN</tspan></text><text x="14" y="38" class="g-green" font-size="12">7.4 s · 窗口已开</text></g>
+                  <path d="M614 84L636 98" class="g-green-line"/>
+                  <text x="884" y="342" text-anchor="end" class="g-text g-faint" font-size="8">示意 · 非等比例</text>
+                </svg>
+              </div>
+              <figcaption>同一个波源，距离不同 → 到达时间不同；三个数各算各的。</figcaption>
+            </figure>
+            <div class="guide-eta-list">
+              <article><span class="eta-code own">OWN</span><h4>当前洞</h4><p>你脚下的位置下一次被真实扫描波扫到还有几秒。这个数小于 1.5 秒会变红——别在这个节骨眼上开新洞。</p><strong>看它，判断自己还能站多久。</strong></article>
+              <article><span class="eta-code">CURSOR</span><h4>光标落点</h4><p>准星当前指到的岩壁，下一道波还有几秒到达。它让你在任意位置先试算：这个点现在开洞，会不会马上被扫到。</p><strong>窗口内这一行会变绿。</strong></article>
+              <article><span class="eta-code plan">PLAN</span><h4>推荐位置</h4><p>顾问规划的下一处落点还有几秒被下一道波碰到。窗口未开时，它倒数“开门波”；变绿后，它倒数“关门波”，也就是你还能犹豫多久。</p><strong>变绿就开，不要等它归零。</strong></article>
+            </div>
+          </div>
+          <div class="guide-callout"><b>把三个数连起来看：</b>当前洞的倒数在变小，说明波正在靠近你；光标落点与推荐位置还是绿的，说明前面有窗口。最稳的节奏是——自己的数不红、推荐位置变绿、准星对准，再按左键。<br><span>“—”表示这一段没有扫描波（安全教学 / 静默段），或者当前没有有效落点，不是故障。</span></div>
+        </section>
+
+        <section class="guide-section">
+          <div class="guide-section-head"><span>03</span><div><h3>一次完整的“等绿 → 开洞 → 丢袋 → 跳入”</h3><p>先等待安全窗，再开洞；填充物落地封洞后才跳。远距离原地跳不会传送，必须走近黑门。</p></div></div>
+          <div class="guide-sequence">
+            <article class="guide-step"><div class="guide-step-figure"><svg viewBox="0 0 200 120" aria-hidden="true"><circle cx="50" cy="58" r="20" class="g-line-soft"/><circle cx="50" cy="58" r="34" class="g-line-soft g-dash"/><path d="M122 58l13-13 13 13-13 13z" class="g-green-line"/><circle cx="135" cy="58" r="3" class="g-green-fill"/><path d="M90 98h86" class="g-line-soft"/><text x="135" y="28" text-anchor="middle" class="g-text g-green" font-size="9">变绿</text></svg></div><span>01</span><h4>等绿</h4><p>准星旁的“推荐新洞 B”从红/白变绿，表示安全窗已打开。</p></article>
+            <article class="guide-step"><div class="guide-step-figure"><svg viewBox="0 0 200 120" aria-hidden="true"><path d="M100 18v44" class="g-line-soft g-dash"/><path d="M100 24v-6M100 34v6M82 62h-6M118 62h6" class="g-bright-line"/><rect x="97" y="59" width="6" height="6" transform="rotate(45 100 62)" class="g-line-bright"/><ellipse cx="100" cy="92" rx="36" ry="9" class="g-line"/><path d="M96 62v30h8V62" class="g-fill g-line-bright"/><text x="100" y="116" text-anchor="middle" class="g-text g-faint" font-size="8">黑门约 0.3 s 打开</text></svg></div><span>02</span><h4>开洞</h4><p>左键在准星处开洞。滚轮 / ± 调距离，标签显示实际米数。</p></article>
+            <article class="guide-step"><div class="guide-step-figure"><svg viewBox="0 0 200 120" aria-hidden="true"><path d="M84 28h32l5 32H79z" class="g-fill g-line"/><path d="M87 28c0-8 26-8 26 0" class="g-line"/><path d="M100 68v10" class="g-line-bright"/><path d="M96 74l4 6 4-6" class="g-line-bright"/><ellipse cx="100" cy="96" rx="34" ry="8" class="g-line"/><path d="M83 94c7-5 27-5 34 0" class="g-green-line"/><text x="100" y="116" text-anchor="middle" class="g-text g-faint" font-size="8">落地约 1 s 封洞</text></svg></div><span>03</span><h4>丢袋</h4><p>F 丢下当前袋。岩层是纹白岩用红袋，金刚岩用蓝袋。</p></article>
+            <article class="guide-step"><div class="guide-step-figure"><svg viewBox="0 0 200 120" aria-hidden="true"><ellipse cx="132" cy="92" rx="34" ry="9" class="g-line"/><path d="M128 88V48h8v40" class="g-fill g-line-bright"/><circle cx="70" cy="54" r="5" class="g-line-bright"/><path d="M70 59v18M70 64l-10 8M70 64l9 8M70 77l-8 12M70 77l8 12" class="g-line-bright"/><path d="M84 58c18-12 34 2 36 24" class="g-line-soft"/><path d="M120 84l-3-10 10 2" class="g-line-soft"/><text x="132" y="116" text-anchor="middle" class="g-text g-faint" font-size="8">走近，再起跳</text></svg></div><span>04</span><h4>跳入</h4><p>走近黑门，按空格 / 跳跃键跳进去。旧洞约 0.3 秒后收拢。</p></article>
+          </div>
+          <div class="guide-notes">
+            <p><b>静默段例外：</b>6–1.5 km 扫描停摆，开洞后不用填充物，门一开就可以跳。</p>
+            <p><b>门开低：</b>黑门下沉时，1.5 秒内按鼠标中键 / 点“补洞”原地补救。</p>
+          </div>
+        </section>
+
+        <section class="guide-section">
+          <div class="guide-section-head"><span>04</span><div><h3>键位与触屏操作</h3><p>桌面用鼠标和键盘；触屏会自动出现左右手控件。右上角的“操作”速查随时可开，桌面也可按 H。</p></div></div>
+          <div class="guide-keys">
+            <div class="guide-keycard"><h4><span>键鼠</span><small>桌面 / 笔记本</small></h4>
+              <dl><div><dt><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>在洞内移动</dd></div><div><dt><kbd>Space</kbd></dt><dd>跳跃 / 跳入黑门</dd></div><div><dt>鼠标移动</dt><dd>转头；锁定失败时照常可用</dd></div><div><dt><kbd>V</kbd></dt><dd>锁定视角；已锁定时打开暂停地图</dd></div><div><dt>鼠标左键</dt><dd>在准星处开洞</dd></div><div><dt>鼠标中键</dt><dd>原地补洞（门低时）</dd></div><div><dt>滚轮</dt><dd>调整开洞斜距（0–58 m）</dd></div><div><dt><kbd>F</kbd></dt><dd>丢下填充物</dd></div><div><dt><kbd>1</kbd><kbd>2</kbd></dt><dd>切换红袋 / 蓝袋</dd></div><div><dt>按住 <kbd>Shift</kbd></dt><dd>快进等待</dd></div><div><dt><kbd>Esc</kbd></dt><dd>暂停并冻结所有计时</dd></div><div><dt><kbd>H</kbd></dt><dd>打开 / 关闭操作速查</dd></div></dl>
+            </div>
+            <div class="guide-keycard"><h4><span>触屏</span><small>手机 / 平板 · 推荐横屏</small></h4>
+              <dl><div><dt>左摇杆</dt><dd>移动；推多少走多快</dd></div><div><dt>右侧拖动</dt><dd>转头</dd></div><div><dt>跳跃</dt><dd>起跳 / 跳入黑门</dd></div><div><dt>开洞</dt><dd>在准星处开洞</dd></div><div><dt>填充</dt><dd>丢下当前袋</dd></div><div><dt>补洞</dt><dd>门低时闪烁，1.5 秒内点它</dd></div><div><dt>− / ＋</dt><dd>调整开洞距离</dd></div><div><dt>红袋 / 蓝袋</dt><dd>切换填充物</dd></div><div><dt>按住快进</dt><dd>加速等待；临近信号自动恢复</dd></div><div><dt>右上暂停</dt><dd>冻结计时并打开 3D 地图</dd></div><div><dt>双指</dt><dd>在暂停地图里缩放</dd></div></dl>
+            </div>
+          </div>
+          <p class="guide-note-small">视角锁定时按 Esc / V 会打开暂停地图并释放鼠标；失败界面可按 R 重试这一跳。触屏下仍保留外接键盘的 Esc 与 H。</p>
+        </section>
+
+        <section class="guide-section">
+          <div class="guide-section-head"><span>05</span><div><h3>16 km 会经过什么</h3><p>默认原程 16 km，320 跳是参考值。辅助设置可以缩短路程、增加生命或自动换袋 / 跳跃。</p></div></div>
+          <div class="guide-route">
+            <div class="guide-route-labels"><span>起点 16 km</span><span>6 km</span><span>1.5 km</span><span>冬冬 0</span></div>
+            <div class="guide-route-bar stages"><i class="single" style="flex:10"><b>单钟扫描</b><small>20 s</small></i><i class="silent" style="flex:4.5"><b>静默</b><small>快进</small></i><i class="five" style="flex:1.5"><b>五钟</b><small>10 s</small></i></div>
+            <div class="guide-route-bar strata"><i class="red" style="flex:6"><b>纹白岩</b><small>红袋 16–10</small></i><i class="blue" style="flex:4"><b>金刚岩</b><small>蓝袋 10–6</small></i><i class="red" style="flex:6"><b>纹白岩</b><small>红袋 6–0</small></i></div>
+          </div>
+          <div class="guide-stages">
+            <article><span>01</span><h4>16–6 km · 单钟扫描</h4><p>一个源头，20 秒周期。最前 1 km 没有探测，先熟悉起跳和落地。</p></article>
+            <article><span>02</span><h4>6–1.5 km · 静默</h4><p>扫描停摆。开洞不用填充物，门一开直接跳；适合按住 Shift 快进。</p></article>
+            <article><span>03</span><h4>1.5–0 km · 五钟</h4><p>五源重启，10 秒周期，波会从后方追。三个倒数各按最近的真实波前计算。</p></article>
+          </div>
+        </section>
+
+        <section class="guide-section guide-mistakes">
+          <div class="guide-section-head"><span>06</span><div><h3>新手最容易犯的四个错</h3><p>这些都不是按钮拦得住的事：真实扫描波会照常判定。</p></div></div>
+          <ul>
+            <li><b>没等绿就开洞</b><span>新洞当前正被波前扫过，会直接暴露。先看准星标签与推荐位置。</span></li>
+            <li><b>袋色和岩层不匹配</b><span>右上角写着当前岩层。纹白岩按 1 红袋，金刚岩按 2 蓝袋。</span></li>
+            <li><b>填充后没等封好就跳</b><span>袋落地约 1 秒封洞；等门变为可进入的传送状态再起跳。</span></li>
+            <li><b>站在远处原地跳</b><span>只有走进黑门再跳才会传送。门开低时记得在 1.5 秒内补洞。</span></li>
+          </ul>
+        </section>
+      </div>
+      <footer class="guide-actions">
+        <span class="guide-hint-desktop">Esc 关闭 · 手册只讲操作，不替你开洞</span><span class="guide-hint-touch">点右上角 × 关闭 · 手册只讲操作，不替你开洞</span>
+        <div><button id="guideTutorial" class="secondary" type="button">先走 1 km 安全教学</button><button id="guideStart" class="primary" type="button">开始正式行动 <span>→</span></button></div>
+      </footer>
+    </div>
+  </section>
   <section id="assistPanel" class="assist-overlay" role="dialog" aria-modal="true" aria-labelledby="assistTitle" hidden>
     <form id="assistForm" class="assist-card">
       <div class="assist-heading"><div><span class="eyebrow">辅助终端 / ASSIST</span><h2 id="assistTitle">老君的法宝（加强版）</h2></div><button id="closeAssists" type="button" class="assist-close" aria-label="取消并关闭辅助设置">×</button></div>
@@ -6473,7 +6920,7 @@ window.__rescueAudioSrc=function(name){return window.__RESCUE_AUDIO__[name]||("a
 (() => {
 'use strict';
 const $=id=>document.getElementById(id), UI={};
-['menu','hud','dialog','help','toast','stageLabel','remaining','jumpCount','routeProgress','stratum','waveMode','heightInfo','targetLabel','targetDot','targetTitle','targetDistance','targetHint','goalLabel','crosshair','aimInfo','aimTag','signalDot','signalText','comms','commsText','ownWave','aimWave','recWave','ownWaveRow','aimWaveRow','recWaveRow','ownWaveUnit','aimWaveUnit','recWaveUnit','bagIcon','bagName','sealInfo','saveNote','chapterTop','warp','assistPanel','assistHud','livesReadout','activeAssists','pauseMap','pauseMapCanvas','pauseMapMeta','pauseMapClock','pauseMapStage','pauseMapLegendWave','pauseMapLegendHole','pauseMapStrataBands','pauseMapStrataNow','pauseMapStrataNote','pauseMapRange','pauseMapLocal','pauseMapFull','pauseMapRangeScale','pauseResume','pauseMenu'].forEach(id=>UI[id]=$(id));
+['menu','hud','dialog','help','guide','toast','stageLabel','remaining','jumpCount','routeProgress','stratum','waveMode','heightInfo','targetLabel','targetDot','targetTitle','targetDistance','targetHint','goalLabel','crosshair','aimInfo','aimTag','signalDot','signalText','comms','commsText','ownWave','aimWave','recWave','ownWaveRow','aimWaveRow','recWaveRow','ownWaveUnit','aimWaveUnit','recWaveUnit','bagIcon','bagName','sealInfo','saveNote','chapterTop','warp','assistPanel','assistHud','livesReadout','activeAssists','pauseMap','pauseMapCanvas','pauseMapMeta','pauseMapClock','pauseMapStage','pauseMapLegendWave','pauseMapLegendHole','pauseMapStrataBands','pauseMapStrataNow','pauseMapStrataNote','pauseMapRange','pauseMapLocal','pauseMapFull','pauseMapRangeScale','pauseResume','pauseMenu','guideScroll'].forEach(id=>UI[id]=$(id));
 const ASSIST_KEY='rescue-dongdong-assists-v1',CONTROL_KEY='rescue-dongdong-controls-v1';
 let assistSettings=Rescue.normalizeAssists();try{assistSettings=Rescue.normalizeAssists(JSON.parse(localStorage.getItem(ASSIST_KEY)));}catch{}
 let controlMode='auto';try{const stored=JSON.parse(localStorage.getItem(CONTROL_KEY));if(stored&&['auto','keyboard','touch'].includes(stored.mode))controlMode=stored.mode;}catch{}
@@ -6713,15 +7160,15 @@ function onEvent(event){
 }
 function start(mode='campaign',save=null){
  pauseMapRange='local';pauseMapContext=null;
- sound.init();sound.stop();arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();UI.menu.hidden=true;UI.hud.hidden=false;UI.dialog.hidden=true;UI.help.hidden=true;UI.assistPanel.hidden=true;document.body.classList.add('playing');$('game').focus();engine.start(mode,save,assistSettings);engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:mode==='five'?1.4:2.2});
+ sound.init();sound.stop();arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();UI.menu.hidden=true;UI.hud.hidden=false;UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;UI.assistPanel.hidden=true;document.body.classList.add('playing');$('game').focus();engine.start(mode,save,assistSettings);engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:mode==='five'?1.4:2.2});
  if(!save){const intro=mode==='tutorial'?'这里是安全区，没有探测。左键开洞，走近黑门，空格跳入；填充物先不用。':mode==='five'?'五钟段开始。波会从后面追上来，先跳三次找节奏。':'安全教学还有 '+km(engine.rules.training)+' km。先熟悉起跳和落地。';commsSay(intro,{delay:.9,hold:6600});}
  const rules=engine.rules;$('stationStart').textContent=km(rules.start)+' km';$('stationTraining').textContent=km(rules.trainingEnd);$('stationSilent').textContent=km(rules.silent);$('stationFive').textContent=km(rules.five);
  if(save?.engineVersion>=6&&!restorePlayer(save.localPlayer)&&['forming','portal','throwing','packed','jumping','low','falling'].includes(engine.state))player.placePortal();
  if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'生命已耗尽，请开始新行动。'});return;}
  persist();lastFrame=performance.now();enterView();
 }
-function retry(){const snapshot=playerSnapshot();UI.dialog.hidden=true;UI.help.hidden=true;resetPauseOverlay();arrivalLandingPending=false;commsClear();commsEdges.clear();sound.stop();engine.retry();engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:1.2});document.body.classList.add('playing');if(engine.exportSave().engineVersion>=6)restorePlayer(snapshot);if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'行动已经失败，请开始新行动。'});return;}lastFrame=performance.now();enterView();}
-function toMenu(){persist();sound.stop();music.stop({fade:.5});arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();releaseView();engine.reset();resetPlayer();UI.dialog.hidden=true;UI.help.hidden=true;UI.assistPanel.hidden=true;UI.hud.hidden=true;UI.menu.hidden=false;document.body.classList.remove('playing');$('continueBtn').hidden=!saved;updateMenu();}
+function retry(){const snapshot=playerSnapshot();UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;resetPauseOverlay();arrivalLandingPending=false;commsClear();commsEdges.clear();sound.stop();engine.retry();engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:1.2});document.body.classList.add('playing');if(engine.exportSave().engineVersion>=6)restorePlayer(snapshot);if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'行动已经失败，请开始新行动。'});return;}lastFrame=performance.now();enterView();}
+function toMenu(){persist();sound.stop();music.stop({fade:.5});arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();releaseView();engine.reset();resetPlayer();UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;UI.assistPanel.hidden=true;UI.hud.hidden=true;UI.menu.hidden=false;document.body.classList.remove('playing');$('continueBtn').hidden=!saved;updateMenu();}
 function resetPauseOverlay(){
  if(pauseMapTimer){clearTimeout(pauseMapTimer);pauseMapTimer=0;}
  if(UI.pauseMap){UI.pauseMap.classList.remove('is-visible');UI.pauseMap.hidden=true;}
@@ -6840,10 +7287,33 @@ function toggleHelp(){
  if(!UI.help.hidden){UI.help.hidden=true;engine.paused=helpWasPaused;lastFrame=performance.now();enterView();return;}
  helpWasPaused=engine.paused;engine.paused=true;releaseView();UI.help.hidden=false;sound.stop();
 }
+let guideReturnFocus=null;
+function trapDialogFocus(container,event){
+ const nodes=[...container.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(node=>!node.disabled&&node.offsetParent!==null);
+ if(!nodes.length)return;
+ const first=nodes[0],last=nodes[nodes.length-1],current=document.activeElement;
+ if(event.shiftKey&&(current===first||!container.contains(current))){event.preventDefault();last.focus();}
+ else if(!event.shiftKey&&(current===last||!container.contains(current))){event.preventDefault();first.focus();}
+}
+function openGuide(){
+ if(!UI.guide.hidden||UI.menu.hidden)return;
+ const active=document.activeElement;
+ guideReturnFocus=active&&UI.menu.contains(active)&&typeof active.focus==='function'?active:$('guideBtn');
+ releaseView();player.clearInput();engine.fast=false;
+ UI.guide.hidden=false;UI.guideScroll.scrollTop=0;
+ requestAnimationFrame(()=>$('closeGuide').focus({preventScroll:true}));
+}
+function closeGuide({restore=true}={}){
+ if(UI.guide.hidden)return;
+ UI.guide.hidden=true;
+ const target=guideReturnFocus;guideReturnFocus=null;
+ if(restore){const next=target&&target.isConnected&&typeof target.focus==='function'?target:$('guideBtn');next.focus({preventScroll:true});}
+}
 try{if(!window.THREE)throw new Error('本地 Three.js 未加载');if(!window.RescuePlayer)throw new Error('本地移动控制器未加载');if(!window.RescuePauseMap)throw new Error('暂停地图未加载');if(!window.RescueTouch)throw new Error('本地触屏控制器未加载');player=new RescuePlayer.Player();scene=new CaveScene($('scene'));engine=new Rescue.Engine({onEvent,externalJumpControl:true,holeRadius:RescuePlayer.PHYSICS.radius});engine.localPlayer=player;pauseMapView=new RescuePauseMap.PauseMapView(UI.pauseMapCanvas);
 touchControls=new RescueTouch.TouchControls({getEngine:()=>engine,getPlayer:()=>player,canInput:()=>viewActive&&inputActive(),look:()=>syncAim(),stepDistance:d=>syncAim(engine.distance+d),fast:on=>{engine.fast=on;},focusGame:()=>$('game').focus({preventScroll:true})});touchControls.setActive(touchMode);}catch(error){$('fatal').hidden=false;$('fatalDetail').textContent=error.message;errors.push(error.message);return;}
 $('startBtn').addEventListener('click',()=>{if(saved){$('dialogStats').textContent='现有记录：'+saved.jumps+' 跳';showDialog('新行动','从 '+km(16000*assistSettings.distanceScale)+' km 重新开始？','现有正式行动进度会被新的行动覆盖，并使用当前辅助设置。','重新开始',()=>start('campaign'),'保留记录，继续上次',()=>start('campaign',saved));}else start('campaign');});
-$('continueBtn').addEventListener('click',()=>start('campaign',saved));$('tutorialBtn').addEventListener('click',()=>start('tutorial'));$('fiveBtn').addEventListener('click',()=>start('five'));$('helpBtn').addEventListener('click',toggleHelp);$('closeHelp').addEventListener('click',toggleHelp);$('pauseBtn').addEventListener('click',()=>togglePause());$('dialogPrimary').addEventListener('click',()=>dialogAction?.());$('dialogSecondary').addEventListener('click',()=>dialogAlt?.());
+$('continueBtn').addEventListener('click',()=>start('campaign',saved));$('tutorialBtn').addEventListener('click',()=>start('tutorial'));$('fiveBtn').addEventListener('click',()=>start('five'));$('helpBtn').addEventListener('click',toggleHelp);$('closeHelp').addEventListener('click',toggleHelp);$('guideBtn').addEventListener('click',openGuide);$('closeGuide').addEventListener('click',()=>closeGuide());$('guideTutorial').addEventListener('click',()=>{closeGuide({restore:false});start('tutorial');});$('guideStart').addEventListener('click',()=>{closeGuide({restore:false});$('startBtn').click();});$('pauseBtn').addEventListener('click',()=>togglePause());$('dialogPrimary').addEventListener('click',()=>dialogAction?.());$('dialogSecondary').addEventListener('click',()=>dialogAlt?.());
+UI.guide.addEventListener('pointerdown',event=>{if(event.target===UI.guide)closeGuide();});
 $('pauseResume').addEventListener('click',()=>togglePause(false));$('pauseMenu').addEventListener('click',()=>{resetPauseOverlay();toMenu();});
 UI.pauseMapLocal.addEventListener('click',()=>setPauseMapRange('local'));UI.pauseMapFull.addEventListener('click',()=>setPauseMapRange('field'));
 $('soundBtn').addEventListener('click',()=>{muted=!muted;$('soundBtn').querySelector('span').textContent=muted?'关':'开';music.setMuted(muted);if(muted)sound.stop();else sound.init();});
@@ -6854,7 +7324,7 @@ UI.assistPanel.addEventListener('pointerdown',event=>{if(event.target===UI.assis
 $('redFiller').addEventListener('click',()=>engine.selectFiller('red'));$('blueFiller').addEventListener('click',()=>engine.selectFiller('blue'));
 const canvas=$('scene');
 const controlTarget=target=>target instanceof Element&&!!target.closest('button,input,select,textarea,a,[contenteditable]:not([contenteditable="false"]),[role="dialog"]');
-const inputActive=()=>!engine.paused&&UI.pauseMap.hidden&&UI.menu.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.assistPanel.hidden&&!UI.hud.hidden&&$('fatal').hidden&&!['menu','failed','won','tutorial-done'].includes(engine.state);
+const inputActive=()=>!engine.paused&&UI.pauseMap.hidden&&UI.menu.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden&&UI.assistPanel.hidden&&!UI.hud.hidden&&$('fatal').hidden&&!['menu','failed','won','tutorial-done'].includes(engine.state);
 const gameplayInput=()=>viewActive&&inputActive()&&!controlTarget(document.activeElement);
 // Mouse look and the wheel stay live while a HUD button owns keyboard focus.
 const pointerInput=()=>viewActive&&inputActive()&&!touchMode;
@@ -6928,6 +7398,11 @@ window.addEventListener('keydown',event=>{
   if(event.code==='Tab'){const nodes=[...UI.assistPanel.querySelectorAll('button,input,select')].filter(n=>!n.disabled),first=nodes[0],last=nodes[nodes.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
   return;
  }
+ if(!UI.guide.hidden){
+  if(event.code==='Escape'){event.preventDefault();closeGuide();}
+  if(event.code==='Tab')trapDialogFocus(UI.guide,event);
+  return;
+ }
  if(event.code==='Escape'){event.preventDefault();if(!UI.help.hidden)toggleHelp();else if(!UI.pauseMap.hidden)togglePause(false);else togglePause(true);return;}
  if(controlTarget(event.target))return;
  if(event.code==='KeyH'){if(!UI.pauseMap.hidden)return;if(!event.repeat)toggleHelp();return;}
@@ -6940,8 +7415,8 @@ window.addEventListener('keydown',event=>{
 });
 window.addEventListener('keyup',event=>{player.setKey(event.code,false);if(event.code.startsWith('Shift'))engine.fast=false;});
 $('waitBtn').addEventListener('pointerdown',event=>{if(!inputActive())return;event.preventDefault();engine.fast=true;});window.addEventListener('pointerup',()=>{engine.fast=false;});
-window.addEventListener('blur',()=>{releaseView();if(!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden)togglePause(true);});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden)togglePause(true);});
+window.addEventListener('blur',()=>{releaseView();if(!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden)togglePause(true);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden)togglePause(true);});
 window.addEventListener('resize',()=>{scene.resize();if(pauseMapView&&!UI.pauseMap.hidden)pauseMapView.resize();});window.addEventListener('beforeunload',()=>{persist();sound.stop();});
 for(let i=0;i<39;i++){const line=document.createElement('i');line.style.height='3px';$('signalMeter').appendChild(line);}
 const meterLines=[...$('signalMeter').children];
@@ -7053,7 +7528,8 @@ function frame(now){
  try{advance(dt);scene.update(engine,dt,{menu:engine.state==='menu'});music.update(dt,engine.paused);if(!UI.hud.hidden){updateHUD(now);commsTick(now);}if(now>toastUntil)UI.toast.classList.remove('show');}catch(error){errors.push(error.message);console.error(error);engine.paused=true;releaseView();$('fatal').hidden=false;$('fatalDetail').textContent=error.message;return;}
  requestAnimationFrame(frame);
 }
-window.__rescue={get engine(){return engine;},get scene(){return scene;},get player(){return player;},get sound(){return sound;},get arrivalLandingPending(){return arrivalLandingPending;},get touch(){return touchControls;},get pauseMapView(){return pauseMapView;},get controlMode(){return controlMode;},get touchMode(){return touchMode;},setControlMode(mode,options){return setControlMode(mode,options);},advance,get errors(){return errors;},get frames(){return frameCount;},get assistSettings(){return {...assistSettings};},start,retry,toMenu,pause:togglePause,openPauseMap,closePauseMap,
+window.__rescue={get engine(){return engine;},get scene(){return scene;},get player(){return player;},get sound(){return sound;},get arrivalLandingPending(){return arrivalLandingPending;},get touch(){return touchControls;},get pauseMapView(){return pauseMapView;},get controlMode(){return controlMode;},get touchMode(){return touchMode;},setControlMode(mode,options){return setControlMode(mode,options);},advance,get errors(){return errors;},get frames(){return frameCount;},get assistSettings(){return {...assistSettings};},start,retry,toMenu,pause:togglePause,openPauseMap,closePauseMap,openGuide,closeGuide,
+get guide(){return {visible:!!UI.guide&&!UI.guide.hidden,scrollTop:UI.guideScroll?.scrollTop??0,scrollHeight:UI.guideScroll?.scrollHeight??0,clientHeight:UI.guideScroll?.clientHeight??0,active:document.activeElement?.id||'',sheet:UI.guide?.querySelector('.guide-sheet')?.getBoundingClientRect()||null,startHidden:$('startBtn').hidden,menuHidden:UI.menu.hidden};},
 get pauseMapSnapshot(){return engine.pauseSnapshot({radius:80});},
 get pauseMapState(){return {visible:!!UI.pauseMap&&!UI.pauseMap.hidden,shown:!!UI.pauseMap&&UI.pauseMap.classList.contains('is-visible'),scatter:!!UI.pauseMap&&UI.pauseMap.classList.contains('scatter-mode'),range:pauseMapView?.range||'local',rangeHidden:UI.pauseMapRange?.hidden??true,rangeLocal:UI.pauseMapLocal?.getAttribute('aria-pressed'),rangeFull:UI.pauseMapFull?.getAttribute('aria-pressed'),rangeScale:UI.pauseMapRangeScale?.textContent||'',paused:engine.paused,scenePaused:!!scene.pauseActive,blend:scene.pauseBlend,fov:scene.camera?.fov,clock:UI.pauseMapClock?.textContent,stage:UI.pauseMapStage?.textContent,meta:UI.pauseMapMeta?.textContent,map:pauseMapView?.lastStats||null,canvas:UI.pauseMapCanvas?{width:UI.pauseMapCanvas.width,height:UI.pauseMapCanvas.height}:null};},
 setMuted(value){muted=!!value;music.setMuted(muted);if(muted)sound.stop();},disableVoice(){sound.stop();},get music(){return {current:music.current,stopped:music.stopped,muted:music.muted,ducked:music.ducked,transition:music.transition?{...music.transition}:null,stopping:[...music.fadeOuts.keys()],levels:Object.fromEntries(music.levels),ctx:sound.ctx?.state||null,routed:[...music.routes.keys()],tracks:Object.fromEntries([...music.tracks].map(([key,clip])=>{const source=clip.currentSrc||clip.src||'',route=music.routes.get(key);return [key,{paused:clip.paused,time:clip.currentTime,duration:clip.duration,volume:clip.volume,loop:clip.loop,gain:route?route.gain.gain.value:null,src:source.startsWith('data:')?'data:audio/mpeg;base64,':decodeURIComponent(source.split('/').pop()||'')}];}))};},say(text,options){commsSay(text,options);},clearComms(){commsClear();},get comms(){return {active:comms.active?{...comms.active}:null,queue:comms.queue.map(item=>({...item})),visible:!UI.comms.hidden&&UI.comms.classList.contains('is-on'),text:UI.commsText.textContent,edges:[...commsEdges.entries()]};},stats(){return {state:engine.state,stage:engine.stage,jumps:engine.jumps,remaining:engine.remaining,assists:engine.assists,lives:engine.lives,scanHits:engine.scanHits,fillerType:engine.fillerType,rules:engine.rules,player:{position:player.position.slice(),eye:player.eye,yaw:player.yaw,pitch:player.pitch,grounded:player.grounded,portal:player.portal},goIn:engine.goIn,escape:engine.escape,rec:engine.rec,aim:{...engine.aim},frames:frameCount,render:scene.stats(),errors:errors.slice()};}};

@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const $=id=>document.getElementById(id), UI={};
-['menu','hud','dialog','help','toast','stageLabel','remaining','jumpCount','routeProgress','stratum','waveMode','heightInfo','targetLabel','targetDot','targetTitle','targetDistance','targetHint','goalLabel','crosshair','aimInfo','aimTag','signalDot','signalText','comms','commsText','ownWave','aimWave','recWave','ownWaveRow','aimWaveRow','recWaveRow','ownWaveUnit','aimWaveUnit','recWaveUnit','bagIcon','bagName','sealInfo','saveNote','chapterTop','warp','assistPanel','assistHud','livesReadout','activeAssists','pauseMap','pauseMapCanvas','pauseMapMeta','pauseMapClock','pauseMapStage','pauseMapLegendWave','pauseMapLegendHole','pauseMapStrataBands','pauseMapStrataNow','pauseMapStrataNote','pauseMapRange','pauseMapLocal','pauseMapFull','pauseMapRangeScale','pauseResume','pauseMenu'].forEach(id=>UI[id]=$(id));
+['menu','hud','dialog','help','guide','toast','stageLabel','remaining','jumpCount','routeProgress','stratum','waveMode','heightInfo','targetLabel','targetDot','targetTitle','targetDistance','targetHint','goalLabel','crosshair','aimInfo','aimTag','signalDot','signalText','comms','commsText','ownWave','aimWave','recWave','ownWaveRow','aimWaveRow','recWaveRow','ownWaveUnit','aimWaveUnit','recWaveUnit','bagIcon','bagName','sealInfo','saveNote','chapterTop','warp','assistPanel','assistHud','livesReadout','activeAssists','pauseMap','pauseMapCanvas','pauseMapMeta','pauseMapClock','pauseMapStage','pauseMapLegendWave','pauseMapLegendHole','pauseMapStrataBands','pauseMapStrataNow','pauseMapStrataNote','pauseMapRange','pauseMapLocal','pauseMapFull','pauseMapRangeScale','pauseResume','pauseMenu','guideScroll'].forEach(id=>UI[id]=$(id));
 const ASSIST_KEY='rescue-dongdong-assists-v1',CONTROL_KEY='rescue-dongdong-controls-v1';
 let assistSettings=Rescue.normalizeAssists();try{assistSettings=Rescue.normalizeAssists(JSON.parse(localStorage.getItem(ASSIST_KEY)));}catch{}
 let controlMode='auto';try{const stored=JSON.parse(localStorage.getItem(CONTROL_KEY));if(stored&&['auto','keyboard','touch'].includes(stored.mode))controlMode=stored.mode;}catch{}
@@ -241,15 +241,15 @@ function onEvent(event){
 }
 function start(mode='campaign',save=null){
  pauseMapRange='local';pauseMapContext=null;
- sound.init();sound.stop();arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();UI.menu.hidden=true;UI.hud.hidden=false;UI.dialog.hidden=true;UI.help.hidden=true;UI.assistPanel.hidden=true;document.body.classList.add('playing');$('game').focus();engine.start(mode,save,assistSettings);engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:mode==='five'?1.4:2.2});
+ sound.init();sound.stop();arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();UI.menu.hidden=true;UI.hud.hidden=false;UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;UI.assistPanel.hidden=true;document.body.classList.add('playing');$('game').focus();engine.start(mode,save,assistSettings);engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:mode==='five'?1.4:2.2});
  if(!save){const intro=mode==='tutorial'?'这里是安全区，没有探测。左键开洞，走近黑门，空格跳入；填充物先不用。':mode==='five'?'五钟段开始。波会从后面追上来，先跳三次找节奏。':'安全教学还有 '+km(engine.rules.training)+' km。先熟悉起跳和落地。';commsSay(intro,{delay:.9,hold:6600});}
  const rules=engine.rules;$('stationStart').textContent=km(rules.start)+' km';$('stationTraining').textContent=km(rules.trainingEnd);$('stationSilent').textContent=km(rules.silent);$('stationFive').textContent=km(rules.five);
  if(save?.engineVersion>=6&&!restorePlayer(save.localPlayer)&&['forming','portal','throwing','packed','jumping','low','falling'].includes(engine.state))player.placePortal();
  if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'生命已耗尽，请开始新行动。'});return;}
  persist();lastFrame=performance.now();enterView();
 }
-function retry(){const snapshot=playerSnapshot();UI.dialog.hidden=true;UI.help.hidden=true;resetPauseOverlay();arrivalLandingPending=false;commsClear();commsEdges.clear();sound.stop();engine.retry();engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:1.2});document.body.classList.add('playing');if(engine.exportSave().engineVersion>=6)restorePlayer(snapshot);if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'行动已经失败，请开始新行动。'});return;}lastFrame=performance.now();enterView();}
-function toMenu(){persist();sound.stop();music.stop({fade:.5});arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();releaseView();engine.reset();resetPlayer();UI.dialog.hidden=true;UI.help.hidden=true;UI.assistPanel.hidden=true;UI.hud.hidden=true;UI.menu.hidden=false;document.body.classList.remove('playing');$('continueBtn').hidden=!saved;updateMenu();}
+function retry(){const snapshot=playerSnapshot();UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;resetPauseOverlay();arrivalLandingPending=false;commsClear();commsEdges.clear();sound.stop();engine.retry();engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:1.2});document.body.classList.add('playing');if(engine.exportSave().engineVersion>=6)restorePlayer(snapshot);if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'行动已经失败，请开始新行动。'});return;}lastFrame=performance.now();enterView();}
+function toMenu(){persist();sound.stop();music.stop({fade:.5});arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();releaseView();engine.reset();resetPlayer();UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;UI.assistPanel.hidden=true;UI.hud.hidden=true;UI.menu.hidden=false;document.body.classList.remove('playing');$('continueBtn').hidden=!saved;updateMenu();}
 function resetPauseOverlay(){
  if(pauseMapTimer){clearTimeout(pauseMapTimer);pauseMapTimer=0;}
  if(UI.pauseMap){UI.pauseMap.classList.remove('is-visible');UI.pauseMap.hidden=true;}
@@ -368,10 +368,33 @@ function toggleHelp(){
  if(!UI.help.hidden){UI.help.hidden=true;engine.paused=helpWasPaused;lastFrame=performance.now();enterView();return;}
  helpWasPaused=engine.paused;engine.paused=true;releaseView();UI.help.hidden=false;sound.stop();
 }
+let guideReturnFocus=null;
+function trapDialogFocus(container,event){
+ const nodes=[...container.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(node=>!node.disabled&&node.offsetParent!==null);
+ if(!nodes.length)return;
+ const first=nodes[0],last=nodes[nodes.length-1],current=document.activeElement;
+ if(event.shiftKey&&(current===first||!container.contains(current))){event.preventDefault();last.focus();}
+ else if(!event.shiftKey&&(current===last||!container.contains(current))){event.preventDefault();first.focus();}
+}
+function openGuide(){
+ if(!UI.guide.hidden||UI.menu.hidden)return;
+ const active=document.activeElement;
+ guideReturnFocus=active&&UI.menu.contains(active)&&typeof active.focus==='function'?active:$('guideBtn');
+ releaseView();player.clearInput();engine.fast=false;
+ UI.guide.hidden=false;UI.guideScroll.scrollTop=0;
+ requestAnimationFrame(()=>$('closeGuide').focus({preventScroll:true}));
+}
+function closeGuide({restore=true}={}){
+ if(UI.guide.hidden)return;
+ UI.guide.hidden=true;
+ const target=guideReturnFocus;guideReturnFocus=null;
+ if(restore){const next=target&&target.isConnected&&typeof target.focus==='function'?target:$('guideBtn');next.focus({preventScroll:true});}
+}
 try{if(!window.THREE)throw new Error('本地 Three.js 未加载');if(!window.RescuePlayer)throw new Error('本地移动控制器未加载');if(!window.RescuePauseMap)throw new Error('暂停地图未加载');if(!window.RescueTouch)throw new Error('本地触屏控制器未加载');player=new RescuePlayer.Player();scene=new CaveScene($('scene'));engine=new Rescue.Engine({onEvent,externalJumpControl:true,holeRadius:RescuePlayer.PHYSICS.radius});engine.localPlayer=player;pauseMapView=new RescuePauseMap.PauseMapView(UI.pauseMapCanvas);
 touchControls=new RescueTouch.TouchControls({getEngine:()=>engine,getPlayer:()=>player,canInput:()=>viewActive&&inputActive(),look:()=>syncAim(),stepDistance:d=>syncAim(engine.distance+d),fast:on=>{engine.fast=on;},focusGame:()=>$('game').focus({preventScroll:true})});touchControls.setActive(touchMode);}catch(error){$('fatal').hidden=false;$('fatalDetail').textContent=error.message;errors.push(error.message);return;}
 $('startBtn').addEventListener('click',()=>{if(saved){$('dialogStats').textContent='现有记录：'+saved.jumps+' 跳';showDialog('新行动','从 '+km(16000*assistSettings.distanceScale)+' km 重新开始？','现有正式行动进度会被新的行动覆盖，并使用当前辅助设置。','重新开始',()=>start('campaign'),'保留记录，继续上次',()=>start('campaign',saved));}else start('campaign');});
-$('continueBtn').addEventListener('click',()=>start('campaign',saved));$('tutorialBtn').addEventListener('click',()=>start('tutorial'));$('fiveBtn').addEventListener('click',()=>start('five'));$('helpBtn').addEventListener('click',toggleHelp);$('closeHelp').addEventListener('click',toggleHelp);$('pauseBtn').addEventListener('click',()=>togglePause());$('dialogPrimary').addEventListener('click',()=>dialogAction?.());$('dialogSecondary').addEventListener('click',()=>dialogAlt?.());
+$('continueBtn').addEventListener('click',()=>start('campaign',saved));$('tutorialBtn').addEventListener('click',()=>start('tutorial'));$('fiveBtn').addEventListener('click',()=>start('five'));$('helpBtn').addEventListener('click',toggleHelp);$('closeHelp').addEventListener('click',toggleHelp);$('guideBtn').addEventListener('click',openGuide);$('closeGuide').addEventListener('click',()=>closeGuide());$('guideTutorial').addEventListener('click',()=>{closeGuide({restore:false});start('tutorial');});$('guideStart').addEventListener('click',()=>{closeGuide({restore:false});$('startBtn').click();});$('pauseBtn').addEventListener('click',()=>togglePause());$('dialogPrimary').addEventListener('click',()=>dialogAction?.());$('dialogSecondary').addEventListener('click',()=>dialogAlt?.());
+UI.guide.addEventListener('pointerdown',event=>{if(event.target===UI.guide)closeGuide();});
 $('pauseResume').addEventListener('click',()=>togglePause(false));$('pauseMenu').addEventListener('click',()=>{resetPauseOverlay();toMenu();});
 UI.pauseMapLocal.addEventListener('click',()=>setPauseMapRange('local'));UI.pauseMapFull.addEventListener('click',()=>setPauseMapRange('field'));
 $('soundBtn').addEventListener('click',()=>{muted=!muted;$('soundBtn').querySelector('span').textContent=muted?'关':'开';music.setMuted(muted);if(muted)sound.stop();else sound.init();});
@@ -382,7 +405,7 @@ UI.assistPanel.addEventListener('pointerdown',event=>{if(event.target===UI.assis
 $('redFiller').addEventListener('click',()=>engine.selectFiller('red'));$('blueFiller').addEventListener('click',()=>engine.selectFiller('blue'));
 const canvas=$('scene');
 const controlTarget=target=>target instanceof Element&&!!target.closest('button,input,select,textarea,a,[contenteditable]:not([contenteditable="false"]),[role="dialog"]');
-const inputActive=()=>!engine.paused&&UI.pauseMap.hidden&&UI.menu.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.assistPanel.hidden&&!UI.hud.hidden&&$('fatal').hidden&&!['menu','failed','won','tutorial-done'].includes(engine.state);
+const inputActive=()=>!engine.paused&&UI.pauseMap.hidden&&UI.menu.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden&&UI.assistPanel.hidden&&!UI.hud.hidden&&$('fatal').hidden&&!['menu','failed','won','tutorial-done'].includes(engine.state);
 const gameplayInput=()=>viewActive&&inputActive()&&!controlTarget(document.activeElement);
 // Mouse look and the wheel stay live while a HUD button owns keyboard focus.
 const pointerInput=()=>viewActive&&inputActive()&&!touchMode;
@@ -456,6 +479,11 @@ window.addEventListener('keydown',event=>{
   if(event.code==='Tab'){const nodes=[...UI.assistPanel.querySelectorAll('button,input,select')].filter(n=>!n.disabled),first=nodes[0],last=nodes[nodes.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
   return;
  }
+ if(!UI.guide.hidden){
+  if(event.code==='Escape'){event.preventDefault();closeGuide();}
+  if(event.code==='Tab')trapDialogFocus(UI.guide,event);
+  return;
+ }
  if(event.code==='Escape'){event.preventDefault();if(!UI.help.hidden)toggleHelp();else if(!UI.pauseMap.hidden)togglePause(false);else togglePause(true);return;}
  if(controlTarget(event.target))return;
  if(event.code==='KeyH'){if(!UI.pauseMap.hidden)return;if(!event.repeat)toggleHelp();return;}
@@ -468,8 +496,8 @@ window.addEventListener('keydown',event=>{
 });
 window.addEventListener('keyup',event=>{player.setKey(event.code,false);if(event.code.startsWith('Shift'))engine.fast=false;});
 $('waitBtn').addEventListener('pointerdown',event=>{if(!inputActive())return;event.preventDefault();engine.fast=true;});window.addEventListener('pointerup',()=>{engine.fast=false;});
-window.addEventListener('blur',()=>{releaseView();if(!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden)togglePause(true);});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden)togglePause(true);});
+window.addEventListener('blur',()=>{releaseView();if(!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden)togglePause(true);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden)togglePause(true);});
 window.addEventListener('resize',()=>{scene.resize();if(pauseMapView&&!UI.pauseMap.hidden)pauseMapView.resize();});window.addEventListener('beforeunload',()=>{persist();sound.stop();});
 for(let i=0;i<39;i++){const line=document.createElement('i');line.style.height='3px';$('signalMeter').appendChild(line);}
 const meterLines=[...$('signalMeter').children];
@@ -581,7 +609,8 @@ function frame(now){
  try{advance(dt);scene.update(engine,dt,{menu:engine.state==='menu'});music.update(dt,engine.paused);if(!UI.hud.hidden){updateHUD(now);commsTick(now);}if(now>toastUntil)UI.toast.classList.remove('show');}catch(error){errors.push(error.message);console.error(error);engine.paused=true;releaseView();$('fatal').hidden=false;$('fatalDetail').textContent=error.message;return;}
  requestAnimationFrame(frame);
 }
-window.__rescue={get engine(){return engine;},get scene(){return scene;},get player(){return player;},get sound(){return sound;},get arrivalLandingPending(){return arrivalLandingPending;},get touch(){return touchControls;},get pauseMapView(){return pauseMapView;},get controlMode(){return controlMode;},get touchMode(){return touchMode;},setControlMode(mode,options){return setControlMode(mode,options);},advance,get errors(){return errors;},get frames(){return frameCount;},get assistSettings(){return {...assistSettings};},start,retry,toMenu,pause:togglePause,openPauseMap,closePauseMap,
+window.__rescue={get engine(){return engine;},get scene(){return scene;},get player(){return player;},get sound(){return sound;},get arrivalLandingPending(){return arrivalLandingPending;},get touch(){return touchControls;},get pauseMapView(){return pauseMapView;},get controlMode(){return controlMode;},get touchMode(){return touchMode;},setControlMode(mode,options){return setControlMode(mode,options);},advance,get errors(){return errors;},get frames(){return frameCount;},get assistSettings(){return {...assistSettings};},start,retry,toMenu,pause:togglePause,openPauseMap,closePauseMap,openGuide,closeGuide,
+get guide(){return {visible:!!UI.guide&&!UI.guide.hidden,scrollTop:UI.guideScroll?.scrollTop??0,scrollHeight:UI.guideScroll?.scrollHeight??0,clientHeight:UI.guideScroll?.clientHeight??0,active:document.activeElement?.id||'',sheet:UI.guide?.querySelector('.guide-sheet')?.getBoundingClientRect()||null,startHidden:$('startBtn').hidden,menuHidden:UI.menu.hidden};},
 get pauseMapSnapshot(){return engine.pauseSnapshot({radius:80});},
 get pauseMapState(){return {visible:!!UI.pauseMap&&!UI.pauseMap.hidden,shown:!!UI.pauseMap&&UI.pauseMap.classList.contains('is-visible'),scatter:!!UI.pauseMap&&UI.pauseMap.classList.contains('scatter-mode'),range:pauseMapView?.range||'local',rangeHidden:UI.pauseMapRange?.hidden??true,rangeLocal:UI.pauseMapLocal?.getAttribute('aria-pressed'),rangeFull:UI.pauseMapFull?.getAttribute('aria-pressed'),rangeScale:UI.pauseMapRangeScale?.textContent||'',paused:engine.paused,scenePaused:!!scene.pauseActive,blend:scene.pauseBlend,fov:scene.camera?.fov,clock:UI.pauseMapClock?.textContent,stage:UI.pauseMapStage?.textContent,meta:UI.pauseMapMeta?.textContent,map:pauseMapView?.lastStats||null,canvas:UI.pauseMapCanvas?{width:UI.pauseMapCanvas.width,height:UI.pauseMapCanvas.height}:null};},
 setMuted(value){muted=!!value;music.setMuted(muted);if(muted)sound.stop();},disableVoice(){sound.stop();},get music(){return {current:music.current,stopped:music.stopped,muted:music.muted,ducked:music.ducked,transition:music.transition?{...music.transition}:null,stopping:[...music.fadeOuts.keys()],levels:Object.fromEntries(music.levels),ctx:sound.ctx?.state||null,routed:[...music.routes.keys()],tracks:Object.fromEntries([...music.tracks].map(([key,clip])=>{const source=clip.currentSrc||clip.src||'',route=music.routes.get(key);return [key,{paused:clip.paused,time:clip.currentTime,duration:clip.duration,volume:clip.volume,loop:clip.loop,gain:route?route.gain.gain.value:null,src:source.startsWith('data:')?'data:audio/mpeg;base64,':decodeURIComponent(source.split('/').pop()||'')}];}))};},say(text,options){commsSay(text,options);},clearComms(){commsClear();},get comms(){return {active:comms.active?{...comms.active}:null,queue:comms.queue.map(item=>({...item})),visible:!UI.comms.hidden&&UI.comms.classList.contains('is-on'),text:UI.commsText.textContent,edges:[...commsEdges.entries()]};},stats(){return {state:engine.state,stage:engine.stage,jumps:engine.jumps,remaining:engine.remaining,assists:engine.assists,lives:engine.lives,scanHits:engine.scanHits,fillerType:engine.fillerType,rules:engine.rules,player:{position:player.position.slice(),eye:player.eye,yaw:player.yaw,pitch:player.pitch,grounded:player.grounded,portal:player.portal},goIn:engine.goIn,escape:engine.escape,rec:engine.rec,aim:{...engine.aim},frames:frameCount,render:scene.stats(),errors:errors.slice()};}};
