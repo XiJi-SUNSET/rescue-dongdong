@@ -8,7 +8,7 @@ const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
 const mod=(a,b)=>(a%b+b)%b, clone=a=>JSON.parse(JSON.stringify(a));
 // Aim assist is magnetic, not absolute: a finished look gesture inside this
 // cone acquires the recommendation; any new drag releases it.
-const SNAP_CAPTURE=14*Math.PI/180, SNAP_ALIGN=0.01;
+const SNAP_CAPTURE=7*Math.PI/180, SNAP_ALIGN=0.01;
 const WORLD={speed:10,period:10,bells:[{p:[-100,-40,0],phase:9.144966666810449},{p:[106,55,232],phase:6.139885008151582},{p:[400,90,326],phase:2.0779863249481867},{p:[74,-70,-257],phase:4.552022634147379},{p:[382,25,-294],phase:4.341932473123139}]};
 // Three 0.2 s input reactions + 0.3/0.2/0.4 s actions. Seal includes 0.4 s margin.
 // action is the minimum time the recommendation must stay usable after it opens.
