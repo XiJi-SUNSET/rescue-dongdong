@@ -13,7 +13,7 @@ const WORLD={speed:10,period:10,bells:[{p:[-100,-40,0],phase:9.144966666810449},
 // Three 0.2 s input reactions + 0.3/0.2/0.4 s actions. Seal includes 0.4 s margin.
 // action is the minimum time the recommendation must stay usable after it opens.
 const TIMING={reaction:.2,readyGrace:.8,land:1.7,seal:1.9,action:.5,waveGuard:.03};
-const ASSIST_DEFAULTS=Object.freeze({distanceScale:1,snapAim:false,maxLives:1,autoFill:false,autoSwitch:false,autoJump:false});
+const ASSIST_DEFAULTS=Object.freeze({distanceScale:1,snapAim:false,snapForce:false,maxLives:1,autoFill:false,autoSwitch:false,autoJump:false});
 const ASSIST_REACTION=.14;
 // Fixed chapter-entry calibration for 1.4 m spheres (not per-leg phase changes).
 // The old zero offset placed the starting sphere inside source 4's wave.
@@ -23,7 +23,8 @@ function normalizeAssists(obj){
  const out={...ASSIST_DEFAULTS};
  if([1,.5,.25,.1].includes(input.distanceScale))out.distanceScale=input.distanceScale;
  if([1,3,5,10].includes(input.maxLives))out.maxLives=input.maxLives;
- for(const key of ['snapAim','autoFill','autoSwitch','autoJump'])out[key]=input[key]===true;
+ for(const key of ['snapAim','snapForce','autoFill','autoSwitch','autoJump'])out[key]=input[key]===true;
+ if(out.snapForce)out.snapAim=false;
  return out;
 }
 function rulesFor(s){return {start:16000*s,training:1000*s,trainingEnd:15000*s,blueStart:10000*s,silent:6000*s,five:1500*s,referenceJumps:Math.ceil(320*s),fiveStartJumps:Math.ceil(20*s)+Math.ceil(180*s)+Math.ceil(90*s)};}
@@ -428,7 +429,16 @@ class Engine{
   this.yaw=0;this.pitch=0;this.distance=this.rec.distance;this.snapHeld=true;this.aimTarget();return true;
  }
  aimTarget(){
-  const reference=this.rec?.point,b=basis(this.pos);
+  const reference=this.rec?.point;
+  // Heavy snap is absolute: no matter where the view points, the opening target
+  // stays on the live recommendation, including its distance.
+  if(this.assists.snapForce&&reference&&['wait','ready'].includes(this.state)){
+   this.yaw=0;this.pitch=0;this.distance=this.rec.distance;this.snapHeld=true;
+   Object.assign(this.aim,{valid:true,point:reference.slice(),go:this.rec.go,nextB:this.rec.nextB,
+    distance:this.rec.distance,window:Math.max(0,this.aDeadline-this.rec.go),deviation:0,snapped:true});
+   return;
+  }
+  const b=basis(this.pos);
   const d=reference?unit(sub(reference,this.pos)):b.d;
   let right=unit([d[2],0,-d[0]]);if(len(right)<.1)right=[0,0,1];
   const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]];

@@ -20,7 +20,7 @@ const bandName=f=>f==='blue'?'金刚岩':'纹白岩';
 const bagName=f=>f==='blue'?'蓝袋':'红袋';
 const bandLabel=f=>f==='blue'?'金刚岩':'纹白岩';
 const bagLabel=f=>f==='blue'?'金刚岩 · 蓝袋':'纹白岩 · 红袋';
-function enabledAssists(a){return [a.distanceScale!==1?'路程 ×'+a.distanceScale:'',a.maxLives>1?a.maxLives+' 点生命':'',a.snapAim?'轻吸附落点':'',a.autoFill?'自动填充':'',a.autoSwitch?'自动换袋':'',a.autoJump?'自动跳跃':''].filter(Boolean);}
+function enabledAssists(a){return [a.distanceScale!==1?'路程 ×'+a.distanceScale:'',a.maxLives>1?a.maxLives+' 点生命':'',a.snapForce?'重吸附落点':a.snapAim?'轻吸附落点':'',a.autoFill?'自动填充':'',a.autoSwitch?'自动换袋':'',a.autoJump?'自动跳跃':''].filter(Boolean);}
 function updateMenu(){
  const a=assistSettings,names=enabledAssists(a);
  $('menuDistance').innerHTML=km(16000*a.distanceScale)+'<small>km</small>';$('menuJumps').innerHTML=Math.ceil(320*a.distanceScale)+'<small>跳</small>';$('menuLives').innerHTML=a.maxLives+'<small>次</small>';
@@ -29,9 +29,9 @@ function updateMenu(){
  $('menuAssistNote').textContent=names.length?'老君的法宝（加强版） · '+names.join(' / ')+'\n'+modeNote+'\n新行动生效，继续存档沿用原设置。':'正常难度 · 所有辅助关闭\n'+modeNote;
  $('startBtn').innerHTML=(saved?'开始新行动':'开始游戏')+' <span>→</span>';
 }
-function readAssistForm(){return Rescue.normalizeAssists({distanceScale:Number($('assistDistance').value),maxLives:Number($('assistLives').value),snapAim:$('assistSnap').checked,autoFill:$('assistFill').checked,autoSwitch:$('assistSwitch').checked,autoJump:$('assistJump').checked});}
+function readAssistForm(){return Rescue.normalizeAssists({distanceScale:Number($('assistDistance').value),maxLives:Number($('assistLives').value),snapAim:$('assistSnap').checked,snapForce:$('assistSnapForce').checked,autoFill:$('assistFill').checked,autoSwitch:$('assistSwitch').checked,autoJump:$('assistJump').checked});}
 function previewAssists(){const a=readAssistForm(),count=enabledAssists(a).length;$('assistPreview').textContent=km(16000*a.distanceScale)+' km · 约 '+Math.ceil(320*a.distanceScale)+' 跳 · '+a.maxLives+' 点生命'+(count?' · '+count+' 项辅助启用':' · 正常难度');}
-function fillAssistForm(a){$('controlMode').value=controlMode;$('assistDistance').value=String(a.distanceScale);$('assistLives').value=String(a.maxLives);$('assistSnap').checked=a.snapAim;$('assistFill').checked=a.autoFill;$('assistSwitch').checked=a.autoSwitch;$('assistJump').checked=a.autoJump;previewAssists();}
+function fillAssistForm(a){a=Rescue.normalizeAssists(a);$('controlMode').value=controlMode;$('assistDistance').value=String(a.distanceScale);$('assistLives').value=String(a.maxLives);$('assistSnap').checked=a.snapAim;$('assistSnapForce').checked=a.snapForce;$('assistFill').checked=a.autoFill;$('assistSwitch').checked=a.autoSwitch;$('assistJump').checked=a.autoJump;previewAssists();}
 function setControlMode(mode,{store=false,announce=false}={}){
  if(!['auto','keyboard','touch'].includes(mode))return false;
  controlMode=mode;const wasTouch=touchMode;touchMode=resolveControlMode();
@@ -404,7 +404,7 @@ $('pauseResume').addEventListener('click',()=>togglePause(false));$('pauseMenu')
 UI.pauseMapLocal.addEventListener('click',()=>setPauseMapRange('local'));UI.pauseMapFull.addEventListener('click',()=>setPauseMapRange('field'));
 $('soundBtn').addEventListener('click',()=>{muted=!muted;$('soundBtn').querySelector('span').textContent=muted?'关':'开';music.setMuted(muted);if(muted)sound.stop();else sound.init();});
 $('assistBtn').addEventListener('click',openAssists);$('closeAssists').addEventListener('click',closeAssists);$('resetAssists').addEventListener('click',()=>fillAssistForm(Rescue.normalizeAssists()));
-$('assistForm').addEventListener('change',previewAssists);$('assistForm').addEventListener('submit',event=>{event.preventDefault();const mode=$('controlMode').value,wasTouch=touchMode;assistSettings=readAssistForm();let stored=true;try{localStorage.setItem(ASSIST_KEY,JSON.stringify(assistSettings));localStorage.setItem(CONTROL_KEY,JSON.stringify({mode}));}catch{stored=false;}setControlMode(mode);closeAssists();toast(stored?(touchMode!==wasTouch?(touchMode?'已切换触屏操作 · 推荐横屏':'已切换键鼠操作'):'设置已保存 · 下次新行动生效'):'设置本次有效 · 浏览器未允许持久保存');});
+$('assistForm').addEventListener('change',event=>{if(event.target.id==='assistSnap'&&$('assistSnap').checked)$('assistSnapForce').checked=false;else if(event.target.id==='assistSnapForce'&&$('assistSnapForce').checked)$('assistSnap').checked=false;previewAssists();});$('assistForm').addEventListener('submit',event=>{event.preventDefault();const mode=$('controlMode').value,wasTouch=touchMode;assistSettings=readAssistForm();let stored=true;try{localStorage.setItem(ASSIST_KEY,JSON.stringify(assistSettings));localStorage.setItem(CONTROL_KEY,JSON.stringify({mode}));}catch{stored=false;}setControlMode(mode);closeAssists();toast(stored?(touchMode!==wasTouch?(touchMode?'已切换触屏操作 · 推荐横屏':'已切换键鼠操作'):'设置已保存 · 下次新行动生效'):'设置本次有效 · 浏览器未允许持久保存');});
 const coarseMedia=window.matchMedia?.('(pointer: coarse)');coarseMedia?.addEventListener?.('change',()=>{if(controlMode==='auto')setControlMode('auto',{announce:true});});
 UI.assistPanel.addEventListener('pointerdown',event=>{if(event.target===UI.assistPanel)closeAssists();});
 $('redFiller').addEventListener('click',()=>engine.selectFiller('red'));$('blueFiller').addEventListener('click',()=>engine.selectFiller('blue'));
@@ -543,7 +543,7 @@ function updateHUD(now){
  const green=rec&&e.time>=rec.go&&e.time<rec.nextB;UI.targetDot.style.background=green?'var(--green)':'var(--red)';
  UI.targetTitle.textContent='推荐新洞 B';UI.targetDistance.textContent=rec?rec.distance.toFixed(1)+' m':'— m';UI.targetHint.textContent=rec?(silent?'0.0 s · 随时开洞':sec(rec.go-e.time)+' s'+(green?' · 可以开洞':' 后可开洞')):'没有连续安全窗口';UI.targetHint.style.color=green?'var(--green)':'';
  UI.crosshair.classList.toggle('snapped',!!aim?.snapped);
- UI.aimInfo.textContent=aim?'实际 '+aim.distance.toFixed(1)+' m'+(!rec?' · 自由瞄准 / 暂无路线建议':e.assists.snapAim?(aim.snapped?' · 已吸附推荐':' · 靠近推荐可吸附'):aim.deviation>1?' · 偏离推荐 '+aim.deviation.toFixed(1)+' m':' · 对准推荐'):e.aim.point?'实际 '+e.aim.distance.toFixed(1)+' m · 此落点无安全窗':'无连续安全落点';
+ UI.aimInfo.textContent=aim?'实际 '+aim.distance.toFixed(1)+' m'+(!rec?' · 自由瞄准 / 暂无路线建议':e.assists.snapForce?' · 重吸附推荐':e.assists.snapAim?(aim.snapped?' · 已吸附推荐':' · 靠近推荐可吸附'):aim.deviation>1?' · 偏离推荐 '+aim.deviation.toFixed(1)+' m':' · 对准推荐'):e.aim.point?'实际 '+e.aim.distance.toFixed(1)+' m · 此落点无安全窗':'无连续安全落点';
  const aimGreen=aim&&e.time>=aim.go&&e.time<aim.nextB;
  // The two HUD numbers are the real next wave contact for the cursor point and
  // for the planner's recommended point. No scan in this stage -> no countdown.
