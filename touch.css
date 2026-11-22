@@ -230,7 +230,11 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .menu .mission-facts span{font-size:8px}
   body.touch-mode .menu-nav{display:flex;flex-direction:column;gap:8px;width:min(100%,340px)}
   body.touch-mode .menu .primary,body.touch-mode .menu .secondary{width:100%;min-width:0;min-height:44px;padding:11px 16px;margin-top:0}
-  body.touch-mode .menu-secondary{margin-top:12px}
+  body.touch-mode .menu-extra{gap:8px}
+  body.touch-mode .menu-extra>.secondary{min-height:42px;padding:7px 11px}
+  body.touch-mode .menu-extra .entry-name{font-size:10.5px;line-height:1.2;gap:1px;letter-spacing:1.5px}
+  body.touch-mode .menu-extra .entry-name small{font-size:7px;letter-spacing:.3px}
+  body.touch-mode .menu-extra .menu-card-action{font-size:8px}
   body.touch-mode .menu-note{margin-top:10px;font-size:8px;line-height:1.7}
   body.touch-mode .menu-footer{
     position:relative;left:auto;right:auto;bottom:auto;margin:20px 18px 0;
@@ -249,7 +253,6 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .menu h1{font-size:29px;margin:2px 0}
   body.touch-mode .menu-subtitle{display:none}
   body.touch-mode .menu .intro,body.touch-mode .menu .mission-facts,body.touch-mode .menu-note{display:none}
-  body.touch-mode .menu-secondary{margin-top:9px}
   body.touch-mode .menu-footer{margin-top:14px}
 }
 @media (orientation:portrait){

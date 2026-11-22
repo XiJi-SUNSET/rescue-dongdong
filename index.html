@@ -25,8 +25,11 @@
         <button id="startBtn" class="primary">开始游戏 <span>→</span></button>
         <button id="continueBtn" class="secondary" hidden>继续上次行动 <span>↗</span></button>
         <button id="assistBtn" class="secondary assist-entry" aria-haspopup="dialog"><span class="entry-name">老君的法宝（加强版）<small>难度辅助</small></span><span id="assistStatus">未启用</span></button>
+        <div class="menu-extra">
+          <button id="guideBtn" class="secondary assist-entry menu-card" aria-haspopup="dialog"><span class="entry-name">新手教程<small>操作手册</small></span><span class="menu-card-action">打开</span></button>
+          <button id="fiveBtn" class="secondary assist-entry menu-card"><span class="entry-name">五钟试练<small>第三段 · 1.5 km</small></span><span class="menu-card-action">开始</span></button>
+        </div>
       </nav>
-      <div class="menu-secondary"><button id="guideBtn">新手教程 <span>↗</span></button><button id="tutorialBtn">1 km 安全教学 <span>↗</span></button><button id="fiveBtn">五钟试练 <span>↗</span></button></div>
       <div class="mission-facts"><div><strong id="menuDistance">16<small>km</small></strong><span>行动距离</span></div><div><strong id="menuJumps">320<small>跳</small></strong><span>参考跳数</span></div><div><strong id="menuLives">1<small>次</small></strong><span>扫描耐受</span></div></div>
       <p class="menu-note" id="menuAssistNote">正常难度 · 所有辅助关闭<br>鼠标与键盘 · 离线游玩</p>
     </div>
@@ -108,7 +111,7 @@
     </div>
   </section>
   <section id="help" class="dialog" hidden><div class="help-card"><span class="eyebrow">只要记住一跳</span><h2>等波。开洞。封住来路。</h2><div class="help-flow keyboard-help"><div><b>01</b><h3>找到下一处落点</h3><p>WASD 在洞内走动，空格真实起跳。开始后移动鼠标即可转头；自动锁定失败时照常移动，点击画面重试锁定，按住右键可拖出画面继续转头。V 重试锁定，滚轮调开洞斜距（准星旁的标签实时显示距离）。红球只推荐位置，不会替你开洞。</p></div><div><b>02</b><h3>看到亮蓝，再按左键</h3><p>首 1 km 安全教学没有探测，随时左键开洞，无需填充物。进入探测范围后，建议等亮蓝再开；提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。黑门从一点展开，约 0.3 秒后打开。</p></div><div><b>03</b><h3>按 F，走近并跳进黑门</h3><p>1 / 2 切换红袋 / 蓝袋，F 丢填充物，落地 1 秒后封洞；岩层从外到内是纹白岩 → 金刚岩 → 纹白岩（16–10 / 10–6 / 6–0 km），纹白岩用红袋、金刚岩用蓝袋，换层后要换袋。入口稍微悬空，走近后按空格、向前跳入；远处原地跳不会传送。出口在新洞上方；穿过后的旧洞口约 0.3 秒后收拢消失。门开低时，1.5 秒内按鼠标中键原地补洞。</p></div></div><div class="help-flow touch-help"><div><b>01</b><h3>左手摇杆，右手转向</h3><p>左下滑动虚拟摇杆移动，右侧画面拖动转头。摇杆推多少走多快，松手立即停下；两根手指可同时操作。横屏视野更宽，推荐横屏游玩。</p></div><div><b>02</b><h3>看到亮蓝，再点开洞</h3><p>底部“＋ / −”调开洞距离（0–58 m），准星对准推荐点。开启“轻吸附推荐落点”后，松手时准星靠近推荐点就会吸住，拖开即恢复自由瞄准。安全窗口打开时“开洞”亮蓝，再点右下大按钮。提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。</p></div><div><b>03</b><h3>填充、跳跃、补洞</h3><p>门开后点“填充”丢下当前袋，点“跳跃”跳入黑门；底部切换红袋 / 蓝袋。门开低时“补洞”会闪烁，1.5 秒内点它。按住“快进”加速等待；右上暂停会冻结所有计时。</p></div></div><p class="help-note touch-help">触屏设置位于“老君的法宝（加强版） → 操作方式”，可强制切换自动 / 键鼠 / 触屏。左摇杆与右视角可同时使用；松手、暂停或切到后台都会清空输入。触屏下仍保留 Esc 暂停与 H 帮助。</p>
-<p class="help-note keyboard-help">三个阶段对应三次事件：单钟持续到 6 km；对方察觉后停机，静默段快速推进；到 1.5 km 五钟逐台重启，波前会先在岩层里走一段路，再进入扫描。Shift 只加速等待，临近信号自动恢复原速。静默段不需要填充物。Esc 暂停、释放鼠标并冻结所有计时，继续后重新进入视角控制；生命耗尽后须开始新行动，继续存档不会恢复生命。独立教学为完整 1 km、推荐 20 跳，不受缩距辅助影响。<br>实际扫描波与空洞球体相交才会命中；HUD 仅给出建议，五个源头高度参与距离计算。320 跳为推荐路线，偏离后推荐点会重新校验可达性。</p><button id="closeHelp" class="primary">明白了 <span>→</span></button></div></section>
+<p class="help-note keyboard-help">三个阶段对应三次事件：单钟持续到 6 km；对方察觉后停机，静默段快速推进；到 1.5 km 五钟逐台重启，波前会先在岩层里走一段路，再进入扫描。Shift 只加速等待，临近信号自动恢复原速。静默段不需要填充物。Esc 暂停、释放鼠标并冻结所有计时，继续后重新进入视角控制；生命耗尽后须开始新行动，继续存档不会恢复生命。正式行动开头为 1 km 安全教学，推荐 20 跳；缩短行动距离时教学段按比例缩短。<br>实际扫描波与空洞球体相交才会命中；HUD 仅给出建议，五个源头高度参与距离计算。320 跳为推荐路线，偏离后推荐点会重新校验可达性。</p><button id="closeHelp" class="primary">明白了 <span>→</span></button></div></section>
   <section id="guide" class="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" hidden>
     <div class="guide-sheet">
       <header class="guide-head">
@@ -295,7 +298,7 @@
       </div>
       <footer class="guide-actions">
         <span class="guide-hint-desktop">Esc 关闭 · 手册只讲操作，不替你开洞</span><span class="guide-hint-touch">点右上角 × 关闭 · 手册只讲操作，不替你开洞</span>
-        <div><button id="guideTutorial" class="secondary" type="button">先走 1 km 安全教学</button><button id="guideStart" class="primary" type="button">开始正式行动 <span>→</span></button></div>
+        <div><button id="guideStart" class="primary" type="button">开始正式行动 <span>→</span></button></div>
       </footer>
     </div>
   </section>
