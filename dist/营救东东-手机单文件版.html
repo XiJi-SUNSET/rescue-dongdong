@@ -507,6 +507,8 @@ body.playing .chapter-top .tiny{color:var(--hud-sym-faint);font-weight:400;lette
   transform:translate(-50%,-50%);border:1px dashed var(--hud-line-soft);
   pointer-events:none
 }
+.crosshair.snapped{filter:drop-shadow(0 0 7px rgba(120,255,165,.62))}
+.crosshair.snapped b{border-color:var(--green);opacity:.92}
 .crosshair span{
   position:absolute;left:50%;top:50%;width:1px;height:1px;
   transform:translate(-50%,-50%);background:var(--hud-sym-bright);
@@ -1759,7 +1761,7 @@ body.touch-mode .toast{
       <button id="pauseMenu" class="secondary">返回起点菜单</button>
     </div>
   </section>
-  <section id="help" class="dialog" hidden><div class="help-card"><span class="eyebrow">只要记住一跳</span><h2>等波。开洞。封住来路。</h2><div class="help-flow keyboard-help"><div><b>01</b><h3>找到下一处落点</h3><p>WASD 在洞内走动，空格真实起跳。开始后移动鼠标即可转头；自动锁定失败时照常移动，点击画面重试锁定，按住右键可拖出画面继续转头。V 重试锁定，滚轮调开洞斜距（准星旁的标签实时显示距离）。红球只推荐位置，不会替你开洞。</p></div><div><b>02</b><h3>看到亮蓝，再按左键</h3><p>首 1 km 安全教学没有探测，随时左键开洞，无需填充物。进入探测范围后，建议等亮蓝再开；提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。黑门从一点展开，约 0.3 秒后打开。</p></div><div><b>03</b><h3>按 F，走近并跳进黑门</h3><p>1 / 2 切换红袋 / 蓝袋，F 丢填充物，落地 1 秒后封洞；岩层从外到内是纹白岩 → 金刚岩 → 纹白岩（16–10 / 10–6 / 6–0 km），纹白岩用红袋、金刚岩用蓝袋，换层后要换袋。入口稍微悬空，走近后按空格、向前跳入；远处原地跳不会传送。出口在新洞上方；穿过后的旧洞口约 0.3 秒后收拢消失。门开低时，1.5 秒内按鼠标中键原地补洞。</p></div></div><div class="help-flow touch-help"><div><b>01</b><h3>左手摇杆，右手转向</h3><p>左下滑动虚拟摇杆移动，右侧画面拖动转头。摇杆推多少走多快，松手立即停下；两根手指可同时操作。横屏视野更宽，推荐横屏游玩。</p></div><div><b>02</b><h3>看到亮蓝，再点开洞</h3><p>底部“＋ / −”调开洞距离（0–58 m），准星对准推荐点。安全窗口打开时“开洞”亮蓝，再点右下大按钮。提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。</p></div><div><b>03</b><h3>填充、跳跃、补洞</h3><p>门开后点“填充”丢下当前袋，点“跳跃”跳入黑门；底部切换红袋 / 蓝袋。门开低时“补洞”会闪烁，1.5 秒内点它。按住“快进”加速等待；右上暂停会冻结所有计时。</p></div></div><p class="help-note touch-help">触屏设置位于“老君的法宝（加强版） → 操作方式”，可强制切换自动 / 键鼠 / 触屏。左摇杆与右视角可同时使用；松手、暂停或切到后台都会清空输入。触屏下仍保留 Esc 暂停与 H 帮助。</p>
+  <section id="help" class="dialog" hidden><div class="help-card"><span class="eyebrow">只要记住一跳</span><h2>等波。开洞。封住来路。</h2><div class="help-flow keyboard-help"><div><b>01</b><h3>找到下一处落点</h3><p>WASD 在洞内走动，空格真实起跳。开始后移动鼠标即可转头；自动锁定失败时照常移动，点击画面重试锁定，按住右键可拖出画面继续转头。V 重试锁定，滚轮调开洞斜距（准星旁的标签实时显示距离）。红球只推荐位置，不会替你开洞。</p></div><div><b>02</b><h3>看到亮蓝，再按左键</h3><p>首 1 km 安全教学没有探测，随时左键开洞，无需填充物。进入探测范围后，建议等亮蓝再开；提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。黑门从一点展开，约 0.3 秒后打开。</p></div><div><b>03</b><h3>按 F，走近并跳进黑门</h3><p>1 / 2 切换红袋 / 蓝袋，F 丢填充物，落地 1 秒后封洞；岩层从外到内是纹白岩 → 金刚岩 → 纹白岩（16–10 / 10–6 / 6–0 km），纹白岩用红袋、金刚岩用蓝袋，换层后要换袋。入口稍微悬空，走近后按空格、向前跳入；远处原地跳不会传送。出口在新洞上方；穿过后的旧洞口约 0.3 秒后收拢消失。门开低时，1.5 秒内按鼠标中键原地补洞。</p></div></div><div class="help-flow touch-help"><div><b>01</b><h3>左手摇杆，右手转向</h3><p>左下滑动虚拟摇杆移动，右侧画面拖动转头。摇杆推多少走多快，松手立即停下；两根手指可同时操作。横屏视野更宽，推荐横屏游玩。</p></div><div><b>02</b><h3>看到亮蓝，再点开洞</h3><p>底部“＋ / −”调开洞距离（0–58 m），准星对准推荐点。开启“轻吸附推荐落点”后，松手时准星靠近推荐点就会吸住，拖开即恢复自由瞄准。安全窗口打开时“开洞”亮蓝，再点右下大按钮。提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。</p></div><div><b>03</b><h3>填充、跳跃、补洞</h3><p>门开后点“填充”丢下当前袋，点“跳跃”跳入黑门；底部切换红袋 / 蓝袋。门开低时“补洞”会闪烁，1.5 秒内点它。按住“快进”加速等待；右上暂停会冻结所有计时。</p></div></div><p class="help-note touch-help">触屏设置位于“老君的法宝（加强版） → 操作方式”，可强制切换自动 / 键鼠 / 触屏。左摇杆与右视角可同时使用；松手、暂停或切到后台都会清空输入。触屏下仍保留 Esc 暂停与 H 帮助。</p>
 <p class="help-note keyboard-help">三个阶段对应三次事件：单钟持续到 6 km；对方察觉后停机，静默段快速推进；到 1.5 km 五钟逐台重启，波前会先在岩层里走一段路，再进入扫描。Shift 只加速等待，临近信号自动恢复原速。静默段不需要填充物。Esc 暂停、释放鼠标并冻结所有计时，继续后重新进入视角控制；生命耗尽后须开始新行动，继续存档不会恢复生命。独立教学为完整 1 km、推荐 20 跳，不受缩距辅助影响。<br>实际扫描波与空洞球体相交才会命中；HUD 仅给出建议，五个源头高度参与距离计算。320 跳为推荐路线，偏离后推荐点会重新校验可达性。</p><button id="closeHelp" class="primary">明白了 <span>→</span></button></div></section>
   <section id="guide" class="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" hidden>
     <div class="guide-sheet">
@@ -1959,7 +1961,7 @@ body.touch-mode .toast{
         <label class="assist-row"><span><strong>操作方式</strong><small>自动跟随设备；也可强制使用键鼠或触屏。触屏推荐横屏。</small></span><select id="controlMode"><option value="auto">自动</option><option value="keyboard">键鼠</option><option value="touch">触屏</option></select></label>
         <label class="assist-row"><span><strong>缩短行动距离</strong><small>正式行动含安全教学按比例缩短，单跳仍 ≤58 m。</small></span><select id="assistDistance"><option value="1">原程 · 16 km</option><option value="0.5">1/2 · 8 km</option><option value="0.25">1/4 · 4 km</option><option value="0.1">1/10 · 1.6 km</option></select></label>
         <label class="assist-row"><span><strong>生命值</strong><small>扫描命中消耗 1 点，耗尽才失败。操作失误不豁免。</small></span><select id="assistLives"><option value="1">1 点 · 原规则</option><option value="3">3 点</option><option value="5">5 点</option><option value="10">10 点</option></select></label>
-        <label class="assist-row"><span><strong>吸附推荐落点</strong><small>自动对准实时推荐的三维位置与距离。</small></span><input id="assistSnap" type="checkbox" class="assist-switch"></label>
+        <label class="assist-row"><span><strong>轻吸附推荐落点</strong><small>转头停稳或松手时，准星靠近推荐点就自动对准；继续拖动即可自由瞄准。</small></span><input id="assistSnap" type="checkbox" class="assist-switch"></label>
         <label class="assist-row"><span><strong>自动丢填充物</strong><small>门打开后自动丢下当前填充物，静默段跳过。</small></span><input id="assistFill" type="checkbox" class="assist-switch"></label>
         <label class="assist-row"><span><strong>自动切换填充物</strong><small>按岩层选红袋或蓝袋；关闭时按 1 / 2 切换。</small></span><input id="assistSwitch" type="checkbox" class="assist-switch"></label>
         <label class="assist-row"><span><strong>自动跳跃</strong><small>填充物落地后跳入门；无探测段开门后直接跳。</small></span><input id="assistJump" type="checkbox" class="assist-switch"></label>
@@ -1987,7 +1989,11 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
 const INF=1e12, EPS=1e-7;
 const add=(a,b)=>a.map((v,i)=>v+b[i]), sub=(a,b)=>a.map((v,i)=>v-b[i]);
 const mul=(a,s)=>a.map(v=>v*s), len=a=>Math.hypot(...a), unit=a=>mul(a,1/(len(a)||1));
+const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
 const mod=(a,b)=>(a%b+b)%b, clone=a=>JSON.parse(JSON.stringify(a));
+// Aim assist is magnetic, not absolute: a finished look gesture inside this
+// cone acquires the recommendation; any new drag releases it.
+const SNAP_CAPTURE=14*Math.PI/180, SNAP_ALIGN=0.01;
 const WORLD={speed:10,period:10,bells:[{p:[-100,-40,0],phase:9.144966666810449},{p:[106,55,232],phase:6.139885008151582},{p:[400,90,326],phase:2.0779863249481867},{p:[74,-70,-257],phase:4.552022634147379},{p:[382,25,-294],phase:4.341932473123139}]};
 // Three 0.2 s input reactions + 0.3/0.2/0.4 s actions. Seal includes 0.4 s margin.
 // action is the minimum time the recommendation must stay usable after it opens.
@@ -2260,12 +2266,12 @@ class Engine{
   this.aim=this.aim.bind(this);this.reset();
  }
  emit(type,data={}){this.onEvent({type,...data});}
- clearAim(){Object.assign(this.aim,{valid:false,point:null,distance:0,go:INF,nextB:INF,window:0,deviation:0});}
+ clearAim(){Object.assign(this.aim,{valid:false,point:null,distance:0,go:INF,nextB:INF,window:0,deviation:0,snapped:false});}
  reset(){
   this.assists=normalizeAssists();this.rules=rulesFor(1);this.lives=1;this.scanHits=0;this.fillerType='red';this.packedFillerType=null;
   this.damageKeys=new Set();this.fivePhaseOffset=0;this.singleEpoch=null;this.singleWorld=null;
   this.mode='campaign';this.state='menu';this.time=0;this.elapsed=0;this.jumps=0;this.failures=0;this.pos=[this.rules.start,0,0];
-  this.target=null;this.rec=null;this.lowUsed=false;this.pending=[];this.stage='training';this.paused=false;this.yaw=0;this.pitch=0;this.distance=50;
+  this.target=null;this.rec=null;this.lowUsed=false;this.pending=[];this.stage='training';this.paused=false;this.yaw=0;this.pitch=0;this.distance=50;this.snapHeld=false;
   this.noPlan=false;this.noPlanReason='';this.lastReason='';this.fast=false;this.lastPlanAt=-INF;this.routePlan=[];this.waveEpoch=null;this.fiveFirstContactAt=INF;this.checkpoint=null;
   this.world=clone(this.baseWorld);this.planner.world=this.world;this.aDeadline=INF;this.singleNext=INF;this.aOpenedAt=0;this.aClosed=false;this.clearTimers();this.clearAim();
  }
@@ -2388,21 +2394,33 @@ class Engine{
    this.rec={point,go:this.time,nextB:INF,deadline:INF,window:INF,distance:d};
    this.pending=[];this.noPlan=false;this.noPlanReason='';
   }else this.planSingle(keepDistance);
-  this.yaw=0;this.pitch=0;this.aimTarget();this.checkpoint=this.exportSave();this.emit('leg');
+  this.snapHeld=false;this.yaw=0;this.pitch=0;this.aimTarget();this.checkpoint=this.exportSave();this.emit('leg');
  }
  aim(yaw,pitch,distance){
   if(this.paused||!['wait','ready'].includes(this.state)||![yaw,pitch,distance].every(Number.isFinite))return;
-  this.yaw=yaw;this.pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch));this.distance=Math.max(0,Math.min(58,distance));this.aimTarget();
+  this.yaw=yaw;this.pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch));this.distance=Math.max(0,Math.min(58,distance));
+  this.snapHeld=false;this.aimTarget();
+ }
+ // Called after a look gesture ends, never on every drag sample: pointing near
+ // the recommendation acquires it, while an ongoing drag stays fully manual.
+ settleSnap(){
+  if(!this.assists.snapAim||!this.rec||!['wait','ready'].includes(this.state))return false;
+  if(len(sub(this.rec.point,this.pos))<.1)return false;
+  // aimTarget builds the ray in the recommendation's frame, so yaw/pitch zero
+  // already points at rec and the angular miss is cos(yaw)*cos(pitch).
+  const angle=Math.acos(Math.max(-1,Math.min(1,Math.cos(this.yaw)*Math.cos(this.pitch))));
+  if(angle>SNAP_CAPTURE)return false;
+  this.yaw=0;this.pitch=0;this.distance=this.rec.distance;this.snapHeld=true;this.aimTarget();return true;
  }
  aimTarget(){
-  const reference=this.rec?.point;
-  if(this.assists.snapAim&&reference&&['wait','ready'].includes(this.state)){
-   this.yaw=0;this.pitch=0;this.distance=this.rec.distance;
-   Object.assign(this.aim,{valid:true,point:reference.slice(),go:this.rec.go,nextB:this.rec.nextB,distance:this.rec.distance,window:Math.max(0,this.aDeadline-this.rec.go),deviation:0});return;
-  }
-  const d=reference?unit(sub(reference,this.pos)):basis(this.pos).d;
+  const reference=this.rec?.point,b=basis(this.pos);
+  const d=reference?unit(sub(reference,this.pos)):b.d;
   let right=unit([d[2],0,-d[0]]);if(len(right)<.1)right=[0,0,1];
   const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]];
+  const aligned=!!reference&&Math.acos(Math.max(-1,Math.min(1,Math.cos(this.yaw)*Math.cos(this.pitch))))<SNAP_ALIGN;
+  if(this.snapHeld&&!aligned)this.snapHeld=false;
+  const snapped=this.assists.snapAim&&aligned&&this.snapHeld;
+  if(snapped)this.distance=this.rec.distance;
   const ray=direction({d,right,up},this.yaw,this.pitch),point=add(this.pos,mul(ray,this.distance));
   const deviation=reference?len(sub(point,reference)):0;
   let go=INF,nextB=this.nextScan(point)?.t??INF;
@@ -2410,7 +2428,7 @@ class Engine{
   else if(reference&&deviation<.001){go=this.rec.go;nextB=this.rec.nextB;}
   else {const choices=this.planner.pointChoices(this.pos,point,this.time,this.aDeadline).sort((a,b)=>b.score-a.score);if(choices.length){go=choices[0].go;nextB=choices[0].nextB;}}
   // valid means a physical target, NOT that the advisor found a safe route.
-  Object.assign(this.aim,{valid:this.distance>EPS&&this.distance<=58+EPS&&point.every(Number.isFinite),point,go,nextB,distance:len(sub(point,this.pos)),window:Math.max(0,this.aDeadline-go),deviation});
+  Object.assign(this.aim,{valid:this.distance>EPS&&this.distance<=58+EPS&&point.every(Number.isFinite),point,go,nextB,distance:len(sub(point,this.pos)),window:Math.max(0,this.aDeadline-go),deviation,snapped});
  }
  open(){
   if(this.paused)return;
@@ -2619,11 +2637,11 @@ class Engine{
   if(!this.processScans())return;
   if(this.state==='interlude'){if(this.time+EPS>=this.transitionAt){this.setupLeg();this.emit('continue');}return;}
   if(['wait','ready'].includes(this.state)&&!this.noScan&&((this.rec&&this.time>this.rec.go+TIMING.readyGrace+EPS)||(!this.rec&&this.time>this.lastPlanAt+1))){
-   // Preserve the physical aim when advice expires. Only explicit snap assist
-   // may redirect it; advisory recomputation must not steer a manual shot.
-   const oldPoint=this.aim.point?.slice();
+   // Preserve the physical aim when advice expires. Replanning must not steer a
+   // manual shot; the magnetic assist re-acquires only on the next input.
+   const oldPoint=this.aim.point?.slice();this.snapHeld=false;
    if(this.stage==='five')this.planFive(true);else {this.planSingle();this.lastPlanAt=this.time;}
-   if(oldPoint&&!this.assists.snapAim)this.retainAim(oldPoint);else this.aimTarget();this.state='wait';
+   if(oldPoint)this.retainAim(oldPoint);else this.aimTarget();this.state='wait';
   }
   if(this.state==='wait'&&this.aim.valid&&this.aim.go<INF&&this.time+EPS>=this.aim.go){this.state='ready';this.emit('go',{window:this.aim.window});}
   if(this.state==='forming'&&this.time+EPS>=this.transitionAt){this.state='portal';this.emit('portal');}
@@ -2640,19 +2658,17 @@ class Engine{
   }
   if(this.state==='low'&&!this.lowWarned&&this.time+EPS>=this.lowEnd){this.lowWarned=true;this.emit('hint',{text:'补洞已延误，新洞仍暴露在扫描中；请尽快补洞。'});}
   if(this.state==='falling'&&this.time+EPS>=this.transitionAt)this.land();
-  if(this.assists.snapAim&&['wait','ready'].includes(this.state))this.aimTarget();
   this.syncAutomation();
   if(this.autoAt<=this.time+EPS){const action=this.autoAction;this.clearAuto();if(action==='fill')this.fill();else if(action==='jump')this.jump(this.jumpKey());}
  }
  retainAim(point){
   const ray=unit(sub(point,this.pos)),d=this.rec?unit(sub(this.rec.point,this.pos)):basis(this.pos).d;
   let right=unit([d[2],0,-d[0]]);if(len(right)<.1)right=[0,0,1];
-  const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]],dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
-  this.yaw=Math.atan2(dot(ray,right),dot(ray,d));this.pitch=Math.asin(Math.max(-1,Math.min(1,dot(ray,up))));this.distance=len(sub(point,this.pos));this.aimTarget();
+  const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]];
+  this.yaw=Math.atan2(dot(ray,right),dot(ray,d));this.pitch=Math.asin(Math.max(-1,Math.min(1,dot(ray,up))));this.distance=len(sub(point,this.pos));this.snapHeld=false;this.aimTarget();
  }
  tick(dt){
   if(this.paused||!Number.isFinite(dt)||dt<=0||['menu','failed','won','tutorial-done'].includes(this.state))return;
-  if(this.assists.snapAim&&['wait','ready'].includes(this.state))this.aimTarget();
   this.syncAutomation();
   if(this.fast&&this.stage!=='five'&&this.state==='wait'&&this.aim.valid&&this.aim.go<INF&&this.aim.go-this.time>4.1)dt=Math.min(dt*8,this.aim.go-this.time-4.05);
   const end=this.time+dt;this.processEvents();
@@ -6665,11 +6681,12 @@ if(typeof module==='object'&&module.exports)module.exports=API;else root.Rescue=
   const clamp = (n, low, high) => Math.max(low, Math.min(high, n));
 
   class TouchControls {
-    constructor({ getEngine, getPlayer, canInput, look, stepDistance, fast, focusGame }) {
+    constructor({ getEngine, getPlayer, canInput, look, settle, stepDistance, fast, focusGame }) {
       this.getEngine = getEngine;
       this.getPlayer = getPlayer;
       this.canInput = canInput;
       this.look = look;
+      this.settle = settle || (() => {});
       this.stepDistance = stepDistance;
       this.fast = fast;
       this.focusGame = focusGame;
@@ -6790,7 +6807,9 @@ if(typeof module==='object'&&module.exports)module.exports=API;else root.Rescue=
       });
       const end = event => {
         if (event && event.pointerId !== this.lookPointer) return;
+        const hadLook = this.lookPointer !== null;
         this.releaseLook();
+        if (hadLook) this.settle();
       };
       zone.addEventListener('pointerup', end);
       zone.addEventListener('pointercancel', end);
@@ -6939,7 +6958,7 @@ const bandName=f=>f==='blue'?'金刚岩':'纹白岩';
 const bagName=f=>f==='blue'?'蓝袋':'红袋';
 const bandLabel=f=>f==='blue'?'金刚岩':'纹白岩';
 const bagLabel=f=>f==='blue'?'金刚岩 · 蓝袋':'纹白岩 · 红袋';
-function enabledAssists(a){return [a.distanceScale!==1?'路程 ×'+a.distanceScale:'',a.maxLives>1?a.maxLives+' 点生命':'',a.snapAim?'吸附落点':'',a.autoFill?'自动填充':'',a.autoSwitch?'自动换袋':'',a.autoJump?'自动跳跃':''].filter(Boolean);}
+function enabledAssists(a){return [a.distanceScale!==1?'路程 ×'+a.distanceScale:'',a.maxLives>1?a.maxLives+' 点生命':'',a.snapAim?'轻吸附落点':'',a.autoFill?'自动填充':'',a.autoSwitch?'自动换袋':'',a.autoJump?'自动跳跃':''].filter(Boolean);}
 function updateMenu(){
  const a=assistSettings,names=enabledAssists(a);
  $('menuDistance').innerHTML=km(16000*a.distanceScale)+'<small>km</small>';$('menuJumps').innerHTML=Math.ceil(320*a.distanceScale)+'<small>跳</small>';$('menuLives').innerHTML=a.maxLives+'<small>次</small>';
@@ -7123,14 +7142,19 @@ let lastLandingAt=-Infinity,arrivalLandingPending=false;
 function resetPlayer(fromExit=false){
  const starting=engine.mode!=='five'&&engine.jumps===0;
  player.reset({cavity:!starting,fromExit});engine.localPlayer=player;
- if(starting){const pose=scene.getStartPose();player.position=pose.position.slice();player.look(pose.yaw,pose.pitch);if(engine.rec)syncAim();return;}
+ if(starting){
+  const pose=scene.getStartPose();player.position=pose.position.slice();player.look(pose.yaw,pose.pitch);
+  if(engine.rec){syncAim();if(engine.assists.snapAim&&engine.settleSnap())alignViewToRec();}
+  return;
+ }
  // Only the snap assist may turn the view onto the recommendation. Without
  // it the player keeps the route-forward heading chosen by the reset.
- if(engine.rec&&engine.assists.snapAim){const b=Rescue.basis(engine.pos),d=Rescue.unit(Rescue.sub(engine.rec.point,engine.pos));player.look(Math.atan2(dot(d,b.right),dot(d,b.d)),Math.asin(Math.max(-1,Math.min(1,dot(d,b.up)))));}
+ if(engine.rec&&engine.assists.snapAim)alignViewToRec();
  syncAim();
+ if(engine.rec&&engine.assists.snapAim&&engine.settleSnap())alignViewToRec();
 }
-let viewActive=false,mouseX=null,mouseY=null,wasLocked=false,lockPending=false;
-function releaseView(){viewActive=false;mouseX=mouseY=null;document.body.classList.remove('view-active');player?.clearInput();if(engine)engine.fast=false;if(document.pointerLockElement)document.exitPointerLock();}
+let viewActive=false,mouseX=null,mouseY=null,wasLocked=false,lockPending=false,aimSettleTimer=0;
+function releaseView(){viewActive=false;mouseX=mouseY=null;document.body.classList.remove('view-active');player?.clearInput();if(engine)engine.fast=false;if(aimSettleTimer){clearTimeout(aimSettleTimer);aimSettleTimer=0;}if(document.pointerLockElement)document.exitPointerLock();}
 function enterView(){
  if(!inputActive())return;
  viewActive=true;mouseX=mouseY=null;document.body.classList.add('view-active');$('game').focus({preventScroll:true});if(!touchMode)requestViewLock();
@@ -7310,7 +7334,7 @@ function closeGuide({restore=true}={}){
  if(restore){const next=target&&target.isConnected&&typeof target.focus==='function'?target:$('guideBtn');next.focus({preventScroll:true});}
 }
 try{if(!window.THREE)throw new Error('本地 Three.js 未加载');if(!window.RescuePlayer)throw new Error('本地移动控制器未加载');if(!window.RescuePauseMap)throw new Error('暂停地图未加载');if(!window.RescueTouch)throw new Error('本地触屏控制器未加载');player=new RescuePlayer.Player();scene=new CaveScene($('scene'));engine=new Rescue.Engine({onEvent,externalJumpControl:true,holeRadius:RescuePlayer.PHYSICS.radius});engine.localPlayer=player;pauseMapView=new RescuePauseMap.PauseMapView(UI.pauseMapCanvas);
-touchControls=new RescueTouch.TouchControls({getEngine:()=>engine,getPlayer:()=>player,canInput:()=>viewActive&&inputActive(),look:()=>syncAim(),stepDistance:d=>syncAim(engine.distance+d),fast:on=>{engine.fast=on;},focusGame:()=>$('game').focus({preventScroll:true})});touchControls.setActive(touchMode);}catch(error){$('fatal').hidden=false;$('fatalDetail').textContent=error.message;errors.push(error.message);return;}
+touchControls=new RescueTouch.TouchControls({getEngine:()=>engine,getPlayer:()=>player,canInput:()=>viewActive&&inputActive(),look:()=>syncAim(),settle:settleAim,stepDistance:d=>syncAim(engine.distance+d),fast:on=>{engine.fast=on;},focusGame:()=>$('game').focus({preventScroll:true})});touchControls.setActive(touchMode);}catch(error){$('fatal').hidden=false;$('fatalDetail').textContent=error.message;errors.push(error.message);return;}
 $('startBtn').addEventListener('click',()=>{if(saved){$('dialogStats').textContent='现有记录：'+saved.jumps+' 跳';showDialog('新行动','从 '+km(16000*assistSettings.distanceScale)+' km 重新开始？','现有正式行动进度会被新的行动覆盖，并使用当前辅助设置。','重新开始',()=>start('campaign'),'保留记录，继续上次',()=>start('campaign',saved));}else start('campaign');});
 $('continueBtn').addEventListener('click',()=>start('campaign',saved));$('tutorialBtn').addEventListener('click',()=>start('tutorial'));$('fiveBtn').addEventListener('click',()=>start('five'));$('helpBtn').addEventListener('click',toggleHelp);$('closeHelp').addEventListener('click',toggleHelp);$('guideBtn').addEventListener('click',openGuide);$('closeGuide').addEventListener('click',()=>closeGuide());$('guideTutorial').addEventListener('click',()=>{closeGuide({restore:false});start('tutorial');});$('guideStart').addEventListener('click',()=>{closeGuide({restore:false});$('startBtn').click();});$('pauseBtn').addEventListener('click',()=>togglePause());$('dialogPrimary').addEventListener('click',()=>dialogAction?.());$('dialogSecondary').addEventListener('click',()=>dialogAlt?.());
 UI.guide.addEventListener('pointerdown',event=>{if(event.target===UI.guide)closeGuide();});
@@ -7328,11 +7352,31 @@ const inputActive=()=>!engine.paused&&UI.pauseMap.hidden&&UI.menu.hidden&&UI.dia
 const gameplayInput=()=>viewActive&&inputActive()&&!controlTarget(document.activeElement);
 // Mouse look and the wheel stay live while a HUD button owns keyboard focus.
 const pointerInput=()=>viewActive&&inputActive()&&!touchMode;
+function alignViewToRec(){
+ if(!engine.rec)return;
+ const basis=Rescue.basis(engine.pos),target=Rescue.unit(Rescue.sub(engine.rec.point,engine.pos));
+ const yaw=Math.atan2(dot(target,basis.right),dot(target,basis.d)),pitch=Math.asin(Math.max(-1,Math.min(1,dot(target,basis.up))));
+ const turn=Math.PI*2,dy=((yaw-player.yaw+Math.PI)%turn+turn)%turn-Math.PI;
+ player.look(dy,pitch-player.pitch);
+}
 function syncAim(distance=engine.distance){
+ // Wheel and the touch +/- buttons are explicit manual range input. They must
+ // also cancel a pending mouse settle, or a distance chosen while pointed at
+ // the recommendation would be overwritten ~130 ms later.
+ if(aimSettleTimer&&Math.abs(distance-engine.distance)>1e-9){clearTimeout(aimSettleTimer);aimSettleTimer=0;}
  const basis=Rescue.basis(engine.pos),v=Rescue.direction(basis,player.yaw,player.pitch),d=engine.rec?Rescue.unit(Rescue.sub(engine.rec.point,engine.pos)):basis.d;
  let right=Rescue.unit([d[2],0,-d[0]]);if(Rescue.len(right)<.1)right=[0,0,1];
  const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]];
  engine.aim(Math.atan2(dot(v,right),dot(v,d)),Math.asin(Math.max(-1,Math.min(1,dot(v,up)))),distance);
+}
+function settleAim(){
+ aimSettleTimer=0;
+ if(!inputActive()||!engine.rec||!engine.assists.snapAim)return;
+ if(engine.settleSnap())alignViewToRec();
+}
+function scheduleAimSettle(){
+ if(!engine.assists.snapAim||!inputActive())return;
+ clearTimeout(aimSettleTimer);aimSettleTimer=setTimeout(settleAim,130);
 }
 function viewLockFallback(){
  lockPending=false;
@@ -7359,7 +7403,7 @@ document.addEventListener('mousemove',event=>{
  const dx=locked?event.movementX:mouseX===null?0:event.clientX-mouseX;
  const dy=locked?event.movementY:mouseY===null?0:event.clientY-mouseY;
  mouseX=event.clientX;mouseY=event.clientY;
- player.look(dx*.0025,-dy*.0025);syncAim();
+ player.look(dx*.0025,-dy*.0025);syncAim();scheduleAimSettle();
 });
 document.documentElement.addEventListener('mouseleave',()=>{mouseX=mouseY=null;});
 let capturedPointer=null;
@@ -7436,7 +7480,8 @@ function updateHUD(now){
  UI.sealInfo.textContent=silent?'此段不用填充物，开门后直接跳':e.sealBlocked?'仍在旧洞内 · 离开后才能封闭':finite(e.sealAt)&&e.sealAt>e.time?'旧洞封闭倒计时 '+sec(e.sealAt-e.time)+' s':finite(e.sealAt)?'旧洞已封闭':'落地 1 秒后封洞，跳后继续计时';
  const green=rec&&e.time>=rec.go&&e.time<rec.nextB;UI.targetDot.style.background=green?'var(--green)':'var(--red)';
  UI.targetTitle.textContent='推荐新洞 B';UI.targetDistance.textContent=rec?rec.distance.toFixed(1)+' m':'— m';UI.targetHint.textContent=rec?(silent?'0.0 s · 随时开洞':sec(rec.go-e.time)+' s'+(green?' · 可以开洞':' 后可开洞')):'没有连续安全窗口';UI.targetHint.style.color=green?'var(--green)':'';
- UI.aimInfo.textContent=aim?'实际 '+aim.distance.toFixed(1)+' m'+(!rec?' · 自由瞄准 / 暂无路线建议':e.assists.snapAim?' · 吸附推荐':aim.deviation>1?' · 偏离推荐 '+aim.deviation.toFixed(1)+' m':' · 对准推荐'):e.aim.point?'实际 '+e.aim.distance.toFixed(1)+' m · 此落点无安全窗':'无连续安全落点';
+ UI.crosshair.classList.toggle('snapped',!!aim?.snapped);
+ UI.aimInfo.textContent=aim?'实际 '+aim.distance.toFixed(1)+' m'+(!rec?' · 自由瞄准 / 暂无路线建议':e.assists.snapAim?(aim.snapped?' · 已吸附推荐':' · 靠近推荐可吸附'):aim.deviation>1?' · 偏离推荐 '+aim.deviation.toFixed(1)+' m':' · 对准推荐'):e.aim.point?'实际 '+e.aim.distance.toFixed(1)+' m · 此落点无安全窗':'无连续安全落点';
  const aimGreen=aim&&e.time>=aim.go&&e.time<aim.nextB;
  // The two HUD numbers are the real next wave contact for the cursor point and
  // for the planner's recommended point. No scan in this stage -> no countdown.

@@ -4,7 +4,11 @@
 const INF=1e12, EPS=1e-7;
 const add=(a,b)=>a.map((v,i)=>v+b[i]), sub=(a,b)=>a.map((v,i)=>v-b[i]);
 const mul=(a,s)=>a.map(v=>v*s), len=a=>Math.hypot(...a), unit=a=>mul(a,1/(len(a)||1));
+const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
 const mod=(a,b)=>(a%b+b)%b, clone=a=>JSON.parse(JSON.stringify(a));
+// Aim assist is magnetic, not absolute: a finished look gesture inside this
+// cone acquires the recommendation; any new drag releases it.
+const SNAP_CAPTURE=14*Math.PI/180, SNAP_ALIGN=0.01;
 const WORLD={speed:10,period:10,bells:[{p:[-100,-40,0],phase:9.144966666810449},{p:[106,55,232],phase:6.139885008151582},{p:[400,90,326],phase:2.0779863249481867},{p:[74,-70,-257],phase:4.552022634147379},{p:[382,25,-294],phase:4.341932473123139}]};
 // Three 0.2 s input reactions + 0.3/0.2/0.4 s actions. Seal includes 0.4 s margin.
 // action is the minimum time the recommendation must stay usable after it opens.
@@ -277,12 +281,12 @@ class Engine{
   this.aim=this.aim.bind(this);this.reset();
  }
  emit(type,data={}){this.onEvent({type,...data});}
- clearAim(){Object.assign(this.aim,{valid:false,point:null,distance:0,go:INF,nextB:INF,window:0,deviation:0});}
+ clearAim(){Object.assign(this.aim,{valid:false,point:null,distance:0,go:INF,nextB:INF,window:0,deviation:0,snapped:false});}
  reset(){
   this.assists=normalizeAssists();this.rules=rulesFor(1);this.lives=1;this.scanHits=0;this.fillerType='red';this.packedFillerType=null;
   this.damageKeys=new Set();this.fivePhaseOffset=0;this.singleEpoch=null;this.singleWorld=null;
   this.mode='campaign';this.state='menu';this.time=0;this.elapsed=0;this.jumps=0;this.failures=0;this.pos=[this.rules.start,0,0];
-  this.target=null;this.rec=null;this.lowUsed=false;this.pending=[];this.stage='training';this.paused=false;this.yaw=0;this.pitch=0;this.distance=50;
+  this.target=null;this.rec=null;this.lowUsed=false;this.pending=[];this.stage='training';this.paused=false;this.yaw=0;this.pitch=0;this.distance=50;this.snapHeld=false;
   this.noPlan=false;this.noPlanReason='';this.lastReason='';this.fast=false;this.lastPlanAt=-INF;this.routePlan=[];this.waveEpoch=null;this.fiveFirstContactAt=INF;this.checkpoint=null;
   this.world=clone(this.baseWorld);this.planner.world=this.world;this.aDeadline=INF;this.singleNext=INF;this.aOpenedAt=0;this.aClosed=false;this.clearTimers();this.clearAim();
  }
@@ -405,21 +409,33 @@ class Engine{
    this.rec={point,go:this.time,nextB:INF,deadline:INF,window:INF,distance:d};
    this.pending=[];this.noPlan=false;this.noPlanReason='';
   }else this.planSingle(keepDistance);
-  this.yaw=0;this.pitch=0;this.aimTarget();this.checkpoint=this.exportSave();this.emit('leg');
+  this.snapHeld=false;this.yaw=0;this.pitch=0;this.aimTarget();this.checkpoint=this.exportSave();this.emit('leg');
  }
  aim(yaw,pitch,distance){
   if(this.paused||!['wait','ready'].includes(this.state)||![yaw,pitch,distance].every(Number.isFinite))return;
-  this.yaw=yaw;this.pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch));this.distance=Math.max(0,Math.min(58,distance));this.aimTarget();
+  this.yaw=yaw;this.pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch));this.distance=Math.max(0,Math.min(58,distance));
+  this.snapHeld=false;this.aimTarget();
+ }
+ // Called after a look gesture ends, never on every drag sample: pointing near
+ // the recommendation acquires it, while an ongoing drag stays fully manual.
+ settleSnap(){
+  if(!this.assists.snapAim||!this.rec||!['wait','ready'].includes(this.state))return false;
+  if(len(sub(this.rec.point,this.pos))<.1)return false;
+  // aimTarget builds the ray in the recommendation's frame, so yaw/pitch zero
+  // already points at rec and the angular miss is cos(yaw)*cos(pitch).
+  const angle=Math.acos(Math.max(-1,Math.min(1,Math.cos(this.yaw)*Math.cos(this.pitch))));
+  if(angle>SNAP_CAPTURE)return false;
+  this.yaw=0;this.pitch=0;this.distance=this.rec.distance;this.snapHeld=true;this.aimTarget();return true;
  }
  aimTarget(){
-  const reference=this.rec?.point;
-  if(this.assists.snapAim&&reference&&['wait','ready'].includes(this.state)){
-   this.yaw=0;this.pitch=0;this.distance=this.rec.distance;
-   Object.assign(this.aim,{valid:true,point:reference.slice(),go:this.rec.go,nextB:this.rec.nextB,distance:this.rec.distance,window:Math.max(0,this.aDeadline-this.rec.go),deviation:0});return;
-  }
-  const d=reference?unit(sub(reference,this.pos)):basis(this.pos).d;
+  const reference=this.rec?.point,b=basis(this.pos);
+  const d=reference?unit(sub(reference,this.pos)):b.d;
   let right=unit([d[2],0,-d[0]]);if(len(right)<.1)right=[0,0,1];
   const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]];
+  const aligned=!!reference&&Math.acos(Math.max(-1,Math.min(1,Math.cos(this.yaw)*Math.cos(this.pitch))))<SNAP_ALIGN;
+  if(this.snapHeld&&!aligned)this.snapHeld=false;
+  const snapped=this.assists.snapAim&&aligned&&this.snapHeld;
+  if(snapped)this.distance=this.rec.distance;
   const ray=direction({d,right,up},this.yaw,this.pitch),point=add(this.pos,mul(ray,this.distance));
   const deviation=reference?len(sub(point,reference)):0;
   let go=INF,nextB=this.nextScan(point)?.t??INF;
@@ -427,7 +443,7 @@ class Engine{
   else if(reference&&deviation<.001){go=this.rec.go;nextB=this.rec.nextB;}
   else {const choices=this.planner.pointChoices(this.pos,point,this.time,this.aDeadline).sort((a,b)=>b.score-a.score);if(choices.length){go=choices[0].go;nextB=choices[0].nextB;}}
   // valid means a physical target, NOT that the advisor found a safe route.
-  Object.assign(this.aim,{valid:this.distance>EPS&&this.distance<=58+EPS&&point.every(Number.isFinite),point,go,nextB,distance:len(sub(point,this.pos)),window:Math.max(0,this.aDeadline-go),deviation});
+  Object.assign(this.aim,{valid:this.distance>EPS&&this.distance<=58+EPS&&point.every(Number.isFinite),point,go,nextB,distance:len(sub(point,this.pos)),window:Math.max(0,this.aDeadline-go),deviation,snapped});
  }
  open(){
   if(this.paused)return;
@@ -636,11 +652,11 @@ class Engine{
   if(!this.processScans())return;
   if(this.state==='interlude'){if(this.time+EPS>=this.transitionAt){this.setupLeg();this.emit('continue');}return;}
   if(['wait','ready'].includes(this.state)&&!this.noScan&&((this.rec&&this.time>this.rec.go+TIMING.readyGrace+EPS)||(!this.rec&&this.time>this.lastPlanAt+1))){
-   // Preserve the physical aim when advice expires. Only explicit snap assist
-   // may redirect it; advisory recomputation must not steer a manual shot.
-   const oldPoint=this.aim.point?.slice();
+   // Preserve the physical aim when advice expires. Replanning must not steer a
+   // manual shot; the magnetic assist re-acquires only on the next input.
+   const oldPoint=this.aim.point?.slice();this.snapHeld=false;
    if(this.stage==='five')this.planFive(true);else {this.planSingle();this.lastPlanAt=this.time;}
-   if(oldPoint&&!this.assists.snapAim)this.retainAim(oldPoint);else this.aimTarget();this.state='wait';
+   if(oldPoint)this.retainAim(oldPoint);else this.aimTarget();this.state='wait';
   }
   if(this.state==='wait'&&this.aim.valid&&this.aim.go<INF&&this.time+EPS>=this.aim.go){this.state='ready';this.emit('go',{window:this.aim.window});}
   if(this.state==='forming'&&this.time+EPS>=this.transitionAt){this.state='portal';this.emit('portal');}
@@ -657,19 +673,17 @@ class Engine{
   }
   if(this.state==='low'&&!this.lowWarned&&this.time+EPS>=this.lowEnd){this.lowWarned=true;this.emit('hint',{text:'补洞已延误，新洞仍暴露在扫描中；请尽快补洞。'});}
   if(this.state==='falling'&&this.time+EPS>=this.transitionAt)this.land();
-  if(this.assists.snapAim&&['wait','ready'].includes(this.state))this.aimTarget();
   this.syncAutomation();
   if(this.autoAt<=this.time+EPS){const action=this.autoAction;this.clearAuto();if(action==='fill')this.fill();else if(action==='jump')this.jump(this.jumpKey());}
  }
  retainAim(point){
   const ray=unit(sub(point,this.pos)),d=this.rec?unit(sub(this.rec.point,this.pos)):basis(this.pos).d;
   let right=unit([d[2],0,-d[0]]);if(len(right)<.1)right=[0,0,1];
-  const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]],dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
-  this.yaw=Math.atan2(dot(ray,right),dot(ray,d));this.pitch=Math.asin(Math.max(-1,Math.min(1,dot(ray,up))));this.distance=len(sub(point,this.pos));this.aimTarget();
+  const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]];
+  this.yaw=Math.atan2(dot(ray,right),dot(ray,d));this.pitch=Math.asin(Math.max(-1,Math.min(1,dot(ray,up))));this.distance=len(sub(point,this.pos));this.snapHeld=false;this.aimTarget();
  }
  tick(dt){
   if(this.paused||!Number.isFinite(dt)||dt<=0||['menu','failed','won','tutorial-done'].includes(this.state))return;
-  if(this.assists.snapAim&&['wait','ready'].includes(this.state))this.aimTarget();
   this.syncAutomation();
   if(this.fast&&this.stage!=='five'&&this.state==='wait'&&this.aim.valid&&this.aim.go<INF&&this.aim.go-this.time>4.1)dt=Math.min(dt*8,this.aim.go-this.time-4.05);
   const end=this.time+dt;this.processEvents();

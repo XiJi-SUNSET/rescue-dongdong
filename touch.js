@@ -4,11 +4,12 @@
   const clamp = (n, low, high) => Math.max(low, Math.min(high, n));
 
   class TouchControls {
-    constructor({ getEngine, getPlayer, canInput, look, stepDistance, fast, focusGame }) {
+    constructor({ getEngine, getPlayer, canInput, look, settle, stepDistance, fast, focusGame }) {
       this.getEngine = getEngine;
       this.getPlayer = getPlayer;
       this.canInput = canInput;
       this.look = look;
+      this.settle = settle || (() => {});
       this.stepDistance = stepDistance;
       this.fast = fast;
       this.focusGame = focusGame;
@@ -129,7 +130,9 @@
       });
       const end = event => {
         if (event && event.pointerId !== this.lookPointer) return;
+        const hadLook = this.lookPointer !== null;
         this.releaseLook();
+        if (hadLook) this.settle();
       };
       zone.addEventListener('pointerup', end);
       zone.addEventListener('pointercancel', end);

@@ -501,6 +501,8 @@ body.playing .chapter-top .tiny{color:var(--hud-sym-faint);font-weight:400;lette
   transform:translate(-50%,-50%);border:1px dashed var(--hud-line-soft);
   pointer-events:none
 }
+.crosshair.snapped{filter:drop-shadow(0 0 7px rgba(120,255,165,.62))}
+.crosshair.snapped b{border-color:var(--green);opacity:.92}
 .crosshair span{
   position:absolute;left:50%;top:50%;width:1px;height:1px;
   transform:translate(-50%,-50%);background:var(--hud-sym-bright);

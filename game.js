@@ -20,7 +20,7 @@ const bandName=f=>f==='blue'?'金刚岩':'纹白岩';
 const bagName=f=>f==='blue'?'蓝袋':'红袋';
 const bandLabel=f=>f==='blue'?'金刚岩':'纹白岩';
 const bagLabel=f=>f==='blue'?'金刚岩 · 蓝袋':'纹白岩 · 红袋';
-function enabledAssists(a){return [a.distanceScale!==1?'路程 ×'+a.distanceScale:'',a.maxLives>1?a.maxLives+' 点生命':'',a.snapAim?'吸附落点':'',a.autoFill?'自动填充':'',a.autoSwitch?'自动换袋':'',a.autoJump?'自动跳跃':''].filter(Boolean);}
+function enabledAssists(a){return [a.distanceScale!==1?'路程 ×'+a.distanceScale:'',a.maxLives>1?a.maxLives+' 点生命':'',a.snapAim?'轻吸附落点':'',a.autoFill?'自动填充':'',a.autoSwitch?'自动换袋':'',a.autoJump?'自动跳跃':''].filter(Boolean);}
 function updateMenu(){
  const a=assistSettings,names=enabledAssists(a);
  $('menuDistance').innerHTML=km(16000*a.distanceScale)+'<small>km</small>';$('menuJumps').innerHTML=Math.ceil(320*a.distanceScale)+'<small>跳</small>';$('menuLives').innerHTML=a.maxLives+'<small>次</small>';
@@ -204,14 +204,19 @@ let lastLandingAt=-Infinity,arrivalLandingPending=false;
 function resetPlayer(fromExit=false){
  const starting=engine.mode!=='five'&&engine.jumps===0;
  player.reset({cavity:!starting,fromExit});engine.localPlayer=player;
- if(starting){const pose=scene.getStartPose();player.position=pose.position.slice();player.look(pose.yaw,pose.pitch);if(engine.rec)syncAim();return;}
+ if(starting){
+  const pose=scene.getStartPose();player.position=pose.position.slice();player.look(pose.yaw,pose.pitch);
+  if(engine.rec){syncAim();if(engine.assists.snapAim&&engine.settleSnap())alignViewToRec();}
+  return;
+ }
  // Only the snap assist may turn the view onto the recommendation. Without
  // it the player keeps the route-forward heading chosen by the reset.
- if(engine.rec&&engine.assists.snapAim){const b=Rescue.basis(engine.pos),d=Rescue.unit(Rescue.sub(engine.rec.point,engine.pos));player.look(Math.atan2(dot(d,b.right),dot(d,b.d)),Math.asin(Math.max(-1,Math.min(1,dot(d,b.up)))));}
+ if(engine.rec&&engine.assists.snapAim)alignViewToRec();
  syncAim();
+ if(engine.rec&&engine.assists.snapAim&&engine.settleSnap())alignViewToRec();
 }
-let viewActive=false,mouseX=null,mouseY=null,wasLocked=false,lockPending=false;
-function releaseView(){viewActive=false;mouseX=mouseY=null;document.body.classList.remove('view-active');player?.clearInput();if(engine)engine.fast=false;if(document.pointerLockElement)document.exitPointerLock();}
+let viewActive=false,mouseX=null,mouseY=null,wasLocked=false,lockPending=false,aimSettleTimer=0;
+function releaseView(){viewActive=false;mouseX=mouseY=null;document.body.classList.remove('view-active');player?.clearInput();if(engine)engine.fast=false;if(aimSettleTimer){clearTimeout(aimSettleTimer);aimSettleTimer=0;}if(document.pointerLockElement)document.exitPointerLock();}
 function enterView(){
  if(!inputActive())return;
  viewActive=true;mouseX=mouseY=null;document.body.classList.add('view-active');$('game').focus({preventScroll:true});if(!touchMode)requestViewLock();
@@ -391,7 +396,7 @@ function closeGuide({restore=true}={}){
  if(restore){const next=target&&target.isConnected&&typeof target.focus==='function'?target:$('guideBtn');next.focus({preventScroll:true});}
 }
 try{if(!window.THREE)throw new Error('本地 Three.js 未加载');if(!window.RescuePlayer)throw new Error('本地移动控制器未加载');if(!window.RescuePauseMap)throw new Error('暂停地图未加载');if(!window.RescueTouch)throw new Error('本地触屏控制器未加载');player=new RescuePlayer.Player();scene=new CaveScene($('scene'));engine=new Rescue.Engine({onEvent,externalJumpControl:true,holeRadius:RescuePlayer.PHYSICS.radius});engine.localPlayer=player;pauseMapView=new RescuePauseMap.PauseMapView(UI.pauseMapCanvas);
-touchControls=new RescueTouch.TouchControls({getEngine:()=>engine,getPlayer:()=>player,canInput:()=>viewActive&&inputActive(),look:()=>syncAim(),stepDistance:d=>syncAim(engine.distance+d),fast:on=>{engine.fast=on;},focusGame:()=>$('game').focus({preventScroll:true})});touchControls.setActive(touchMode);}catch(error){$('fatal').hidden=false;$('fatalDetail').textContent=error.message;errors.push(error.message);return;}
+touchControls=new RescueTouch.TouchControls({getEngine:()=>engine,getPlayer:()=>player,canInput:()=>viewActive&&inputActive(),look:()=>syncAim(),settle:settleAim,stepDistance:d=>syncAim(engine.distance+d),fast:on=>{engine.fast=on;},focusGame:()=>$('game').focus({preventScroll:true})});touchControls.setActive(touchMode);}catch(error){$('fatal').hidden=false;$('fatalDetail').textContent=error.message;errors.push(error.message);return;}
 $('startBtn').addEventListener('click',()=>{if(saved){$('dialogStats').textContent='现有记录：'+saved.jumps+' 跳';showDialog('新行动','从 '+km(16000*assistSettings.distanceScale)+' km 重新开始？','现有正式行动进度会被新的行动覆盖，并使用当前辅助设置。','重新开始',()=>start('campaign'),'保留记录，继续上次',()=>start('campaign',saved));}else start('campaign');});
 $('continueBtn').addEventListener('click',()=>start('campaign',saved));$('tutorialBtn').addEventListener('click',()=>start('tutorial'));$('fiveBtn').addEventListener('click',()=>start('five'));$('helpBtn').addEventListener('click',toggleHelp);$('closeHelp').addEventListener('click',toggleHelp);$('guideBtn').addEventListener('click',openGuide);$('closeGuide').addEventListener('click',()=>closeGuide());$('guideTutorial').addEventListener('click',()=>{closeGuide({restore:false});start('tutorial');});$('guideStart').addEventListener('click',()=>{closeGuide({restore:false});$('startBtn').click();});$('pauseBtn').addEventListener('click',()=>togglePause());$('dialogPrimary').addEventListener('click',()=>dialogAction?.());$('dialogSecondary').addEventListener('click',()=>dialogAlt?.());
 UI.guide.addEventListener('pointerdown',event=>{if(event.target===UI.guide)closeGuide();});
@@ -409,11 +414,31 @@ const inputActive=()=>!engine.paused&&UI.pauseMap.hidden&&UI.menu.hidden&&UI.dia
 const gameplayInput=()=>viewActive&&inputActive()&&!controlTarget(document.activeElement);
 // Mouse look and the wheel stay live while a HUD button owns keyboard focus.
 const pointerInput=()=>viewActive&&inputActive()&&!touchMode;
+function alignViewToRec(){
+ if(!engine.rec)return;
+ const basis=Rescue.basis(engine.pos),target=Rescue.unit(Rescue.sub(engine.rec.point,engine.pos));
+ const yaw=Math.atan2(dot(target,basis.right),dot(target,basis.d)),pitch=Math.asin(Math.max(-1,Math.min(1,dot(target,basis.up))));
+ const turn=Math.PI*2,dy=((yaw-player.yaw+Math.PI)%turn+turn)%turn-Math.PI;
+ player.look(dy,pitch-player.pitch);
+}
 function syncAim(distance=engine.distance){
+ // Wheel and the touch +/- buttons are explicit manual range input. They must
+ // also cancel a pending mouse settle, or a distance chosen while pointed at
+ // the recommendation would be overwritten ~130 ms later.
+ if(aimSettleTimer&&Math.abs(distance-engine.distance)>1e-9){clearTimeout(aimSettleTimer);aimSettleTimer=0;}
  const basis=Rescue.basis(engine.pos),v=Rescue.direction(basis,player.yaw,player.pitch),d=engine.rec?Rescue.unit(Rescue.sub(engine.rec.point,engine.pos)):basis.d;
  let right=Rescue.unit([d[2],0,-d[0]]);if(Rescue.len(right)<.1)right=[0,0,1];
  const up=[d[1]*right[2]-d[2]*right[1],d[2]*right[0]-d[0]*right[2],d[0]*right[1]-d[1]*right[0]];
  engine.aim(Math.atan2(dot(v,right),dot(v,d)),Math.asin(Math.max(-1,Math.min(1,dot(v,up)))),distance);
+}
+function settleAim(){
+ aimSettleTimer=0;
+ if(!inputActive()||!engine.rec||!engine.assists.snapAim)return;
+ if(engine.settleSnap())alignViewToRec();
+}
+function scheduleAimSettle(){
+ if(!engine.assists.snapAim||!inputActive())return;
+ clearTimeout(aimSettleTimer);aimSettleTimer=setTimeout(settleAim,130);
 }
 function viewLockFallback(){
  lockPending=false;
@@ -440,7 +465,7 @@ document.addEventListener('mousemove',event=>{
  const dx=locked?event.movementX:mouseX===null?0:event.clientX-mouseX;
  const dy=locked?event.movementY:mouseY===null?0:event.clientY-mouseY;
  mouseX=event.clientX;mouseY=event.clientY;
- player.look(dx*.0025,-dy*.0025);syncAim();
+ player.look(dx*.0025,-dy*.0025);syncAim();scheduleAimSettle();
 });
 document.documentElement.addEventListener('mouseleave',()=>{mouseX=mouseY=null;});
 let capturedPointer=null;
@@ -517,7 +542,8 @@ function updateHUD(now){
  UI.sealInfo.textContent=silent?'此段不用填充物，开门后直接跳':e.sealBlocked?'仍在旧洞内 · 离开后才能封闭':finite(e.sealAt)&&e.sealAt>e.time?'旧洞封闭倒计时 '+sec(e.sealAt-e.time)+' s':finite(e.sealAt)?'旧洞已封闭':'落地 1 秒后封洞，跳后继续计时';
  const green=rec&&e.time>=rec.go&&e.time<rec.nextB;UI.targetDot.style.background=green?'var(--green)':'var(--red)';
  UI.targetTitle.textContent='推荐新洞 B';UI.targetDistance.textContent=rec?rec.distance.toFixed(1)+' m':'— m';UI.targetHint.textContent=rec?(silent?'0.0 s · 随时开洞':sec(rec.go-e.time)+' s'+(green?' · 可以开洞':' 后可开洞')):'没有连续安全窗口';UI.targetHint.style.color=green?'var(--green)':'';
- UI.aimInfo.textContent=aim?'实际 '+aim.distance.toFixed(1)+' m'+(!rec?' · 自由瞄准 / 暂无路线建议':e.assists.snapAim?' · 吸附推荐':aim.deviation>1?' · 偏离推荐 '+aim.deviation.toFixed(1)+' m':' · 对准推荐'):e.aim.point?'实际 '+e.aim.distance.toFixed(1)+' m · 此落点无安全窗':'无连续安全落点';
+ UI.crosshair.classList.toggle('snapped',!!aim?.snapped);
+ UI.aimInfo.textContent=aim?'实际 '+aim.distance.toFixed(1)+' m'+(!rec?' · 自由瞄准 / 暂无路线建议':e.assists.snapAim?(aim.snapped?' · 已吸附推荐':' · 靠近推荐可吸附'):aim.deviation>1?' · 偏离推荐 '+aim.deviation.toFixed(1)+' m':' · 对准推荐'):e.aim.point?'实际 '+e.aim.distance.toFixed(1)+' m · 此落点无安全窗':'无连续安全落点';
  const aimGreen=aim&&e.time>=aim.go&&e.time<aim.nextB;
  // The two HUD numbers are the real next wave contact for the cursor point and
  // for the planner's recommended point. No scan in this stage -> no countdown.
