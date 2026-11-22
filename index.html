@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#20313d"><meta name="mobile-web-app-capable" content="yes"><title>冬冬拯救行动方案五</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="pause-map.css">
+<link rel="stylesheet" href="touch.css">
+</head>
+<body>
+<main id="game" tabindex="-1">
+  <canvas id="scene" aria-label="卡通渲染的三维地下岩洞"></canvas>
+  <div class="vignette"></div><div id="warp"></div>
+  <header class="topbar">
+    <div class="wordmark"><img src="assets/mission-logo.png" alt="冬冬拯救行动方案五" width="1269" height="910"><span>冬冬拯救行动方案五<small>RESCUE / STATION 07</small></span></div>
+    <div id="chapterTop" class="chapter-top"><span class="tiny">行动编号  /  001</span><span>在岩层之下，寻找一线生机。</span></div>
+    <div class="top-actions"><button id="lockBtn" class="icon-button" title="开始后鼠标移动即转头；V 锁定视角，Esc 暂停并释放">锁定视角 V</button><button id="soundBtn" class="icon-button" title="切换声音" aria-label="切换声音">声音 <span>开</span></button><button id="helpBtn" class="icon-button" title="操作说明 H">操作 <kbd>H</kbd></button><button id="pauseBtn" class="icon-button" title="暂停 Esc">暂停 <kbd>ESC</kbd></button></div>
+  </header>
+  <section id="menu" class="menu">
+    <div class="menu-copy">
+      <div class="eyebrow"><span></span> 地下控制室 / 待命</div>
+      <h1 class="mission-title"><img class="mission-logo" src="assets/mission-logo.png" alt="冬冬拯救行动方案五" width="1269" height="910"></h1><div class="menu-subtitle">RESCUE DONGDONG</div>
+      <p class="intro">信号还在。<br>准备好了，就出发。</p>
+      <nav class="menu-nav" aria-label="开始菜单">
+        <button id="startBtn" class="primary">开始游戏 <span>→</span></button>
+        <button id="continueBtn" class="secondary" hidden>继续上次行动 <span>↗</span></button>
+        <button id="assistBtn" class="secondary assist-entry" aria-haspopup="dialog"><span class="entry-name">老君的法宝（加强版）<small>难度辅助</small></span><span id="assistStatus">未启用</span></button>
+      </nav>
+      <div class="menu-secondary"><button id="tutorialBtn">1 km 安全教学 <span>↗</span></button><button id="fiveBtn">五钟试练 <span>↗</span></button></div>
+      <div class="mission-facts"><div><strong id="menuDistance">16<small>km</small></strong><span>行动距离</span></div><div><strong id="menuJumps">320<small>跳</small></strong><span>参考跳数</span></div><div><strong id="menuLives">1<small>次</small></strong><span>扫描耐受</span></div></div>
+      <p class="menu-note" id="menuAssistNote">正常难度 · 所有辅助关闭<br>鼠标与键盘 · 离线游玩</p>
+    </div>
+    <div class="console-caption"><span class="console-status"></span><span>监测终端在线<small>地下联络站 / STATION 07</small></span></div>
+    <div class="menu-footer"><span>无限 / 开洞　 ×　 小黑 / 传送</span><span>等待出发指令。</span></div>
+  </section>
+  <section id="hud" hidden aria-label="游戏状态">
+    <div class="route-readout"><div class="eyebrow" id="stageLabel">第一段 / 单钟扫描</div><div class="distance"><b id="remaining">16.00</b><span>km</span></div><div class="distance-caption"><span class="caption-label">感知目标距离</span> <span id="jumpCount">000 / 320 参考跳</span></div><div class="route-track"><i id="routeProgress"></i><em class="training-marker" style="left:6.25%"><span id="stationTraining" title="安全教学终点">15</span></em><em style="left:62.5%"></em><em style="left:90.625%"></em></div><div class="route-stations"><span id="stationStart">16 km</span><span id="stationSilent">6 km</span><span id="stationFive">1.5</span><span>0</span></div><div id="assistHud" class="assist-hud" hidden><span>老君的法宝（加强版）</span><strong id="livesReadout">生命 3 / 3</strong><small id="activeAssists"></small></div></div>
+    <div class="environment-readout"><span class="tiny">岩层 / STRATUM</span><strong id="stratum">纹白岩</strong><span id="waveMode">1 个源头 · 20 s 周期</span><span id="heightInfo">开洞高度 +0.0 m</span></div>
+    <div id="comms" class="comms" role="status" aria-live="polite" hidden><img class="comms-avatar" src="assets/message-avatar.png" alt="白游" width="462" height="476" decoding="async"><div class="comms-body"><div class="comms-head"><strong>白游</strong><span><i aria-hidden="true"></i>通讯 / COMMS</span></div><p id="commsText" class="comms-text"></p></div></div>
+    <div id="targetLabel" class="world-label"><span id="targetDot"></span><strong id="targetTitle">推荐新洞 B</strong><small id="targetDistance">50.0 m</small><em id="targetHint">等待波扫过</em></div>
+    <div id="goalLabel" class="goal-label" hidden><span class="goal-dot" aria-hidden="true"></span><div class="goal-caption">冬冬<small>感知目标</small></div></div>
+    <div id="crosshair" class="crosshair"><i></i><b></b><span></span></div><div id="aimInfo" class="aim-info">实际瞄准 50.0 m</div><div id="aimTag" class="aim-tag" hidden>50.0 m</div>
+    <div class="signal-panel"><div class="tiny">撼地钟 / SCAN FIELD</div><div class="signal-status"><i id="signalDot"></i><strong id="signalText">等待波前</strong></div><div class="signal-meter" id="signalMeter"></div><button id="waitBtn" class="wait-button">按住 Shift 快进等待 <span>»</span></button></div>
+    <div class="wave-hud">
+      <div class="wave-head"><span class="tiny">下一波到达 / WAVE ETA</span><i class="wave-scale" aria-hidden="true"></i></div>
+      <div class="wave-row own" id="ownWaveRow"><span data-code="OWN" title="扫描波抵达你所在洞口的时间">当前洞</span><b id="ownWave">—</b><small id="ownWaveUnit">s</small></div>
+      <div class="wave-row" id="aimWaveRow"><span data-code="CURSOR">光标落点</span><b id="aimWave">—</b><small id="aimWaveUnit">s</small></div>
+      <div class="wave-row" id="recWaveRow"><span data-code="PLAN">推荐落点</span><b id="recWave">—</b><small id="recWaveUnit">s</small></div>
+    </div>
+    <div class="equipment-panel"><div class="bag-icon" id="bagIcon" aria-hidden="true"><svg viewBox="0 0 32 39" focusable="false" aria-hidden="true"><path class="bag-neck" d="M12.5 10.2C12.3 8.8 11.7 7.6 11 6.7 10.6 6.1 11.3 5.5 12.2 5.2 13.4 4.8 18.6 4.8 19.8 5.2 20.7 5.5 21.4 6.1 21 6.7 20.3 7.6 19.7 8.8 19.5 10.2Z"/><path class="bag-body" d="M10.4 10.6C9.2 11.1 8.2 11.9 7.2 12.9 4.9 15.3 3.4 18.6 3.4 22.9 3.4 30.9 8.6 36.2 16 36.2 23.4 36.2 28.6 30.9 28.6 22.9 28.6 18.6 27.1 15.3 24.8 12.9 23.8 11.9 22.8 11.1 21.6 10.6Z"/><path class="bag-crease" d="M13.2 5.4C14.4 5.15 17.6 5.15 18.8 5.4"/><path class="bag-cord" d="M9.4 10.4C12.5 11.8 19.5 11.8 22.6 10.4"/><circle class="bag-knot" cx="16" cy="11.5" r="1.05"/><path class="bag-tie" d="M15.35 12.2C14.8 13.6 13.9 15 13.2 16.2M16.65 12.2C17.2 13.6 18.1 15 18.8 16.2"/></svg></div><div><div class="tiny">填充物 / INFINITE</div><strong id="bagName">纹白岩 · 红袋</strong><span id="sealInfo">离洞前丢下，落地 1 秒后封洞</span><div class="filler-controls"><button id="redFiller" title="切换纹白岩填充物（1）"><kbd>1</kbd> 红袋</button><button id="blueFiller" title="切换金刚岩填充物（2）"><kbd>2</kbd> 蓝袋</button></div></div></div>
+    <footer class="play-footer"><span>WASD 行走　空格跳跃　<span class="dim">中键原地补洞</span></span><span id="saveNote">暂停记录状态 · 生命耗尽需重开</span><span>鼠标移动转头 / V 锁定　<span class="dim">滚轮调距 · ≤58 m</span></span></footer>
+  </section>
+  <div id="touchLayer" class="touch-layer" aria-label="触屏操作" hidden>
+    <div id="touchLook" class="touch-look" aria-hidden="true"></div>
+    <div id="touchStatus" class="touch-status" aria-hidden="true"><strong id="touchSignal">等待安全开洞时机</strong><span id="touchMeta">推荐 — · 50 m</span></div>
+    <div id="touchStick" class="touch-stick" role="group" aria-label="移动摇杆"><span class="touch-stick-ring" aria-hidden="true"></span><i id="touchKnob" aria-hidden="true"></i><small>移动</small></div>
+    <div class="touch-dock">
+      <div class="touch-bags" role="group" aria-label="切换填充物"><button id="touchRed" type="button"><i aria-hidden="true"></i>红袋</button><button id="touchBlue" type="button"><i aria-hidden="true"></i>蓝袋</button></div>
+      <div class="touch-distance" role="group" aria-label="开洞距离"><button id="touchNear" type="button" aria-label="开洞距离减少 2 米">−</button><b id="touchDistance">50 m</b><button id="touchFar" type="button" aria-label="开洞距离增加 2 米">＋</button></div>
+      <span id="touchFiller" class="touch-filler">纹白岩 · 红袋</span>
+    </div>
+    <div class="touch-actions">
+      <button id="touchFast" class="touch-action fast" type="button">快进<small>按住</small></button>
+      <button id="touchRepair" class="touch-action repair" type="button">补洞<small>门低时</small></button>
+      <button id="touchFill" class="touch-action fill" type="button">填充<small>丢下</small></button>
+      <button id="touchJump" class="touch-action jump" type="button">跳跃<small>起跳</small></button>
+      <button id="touchOpen" class="touch-action open" type="button">开洞<small>对准后</small></button>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <section id="dialog" class="dialog" hidden><div class="dialog-card"><span id="dialogKicker" class="eyebrow">行动暂停</span><h2 id="dialogTitle">岩层暂时安静了。</h2><p id="dialogText"></p><div id="dialogStats"></div><button id="dialogPrimary" class="primary">继续行动 <span>→</span></button><button id="dialogSecondary" class="secondary">返回起点菜单</button></div></section>
+  <section id="pauseMap" class="pause-map" role="dialog" aria-modal="true" aria-labelledby="pauseMapTitle" hidden>
+    <canvas id="pauseMapCanvas" aria-hidden="true"></canvas>
+    <div class="pause-map-head">
+      <span class="eyebrow">冻结快照 / PAUSED</span>
+      <h2 id="pauseMapTitle">这一刻的扫描场。</h2>
+      <span class="rule"></span>
+      <p id="pauseMapMeta">现实时间已冻结。地图按当前引擎状态绘制，等待不会改变它。</p>
+    </div>
+    <div class="pause-map-frozen"><b id="pauseMapClock">t = 0.0 s</b><span id="pauseMapStage">STAGE / —</span></div>
+    <div class="pause-map-strata" aria-hidden="true">
+      <span class="eyebrow">岩层 / STRATA</span>
+      <div class="pause-map-strata-bands" id="pauseMapStrataBands"></div>
+      <strong id="pauseMapStrataNow">纹白岩</strong>
+      <span id="pauseMapStrataNote">纹白岩 16–10 km · 金刚岩 10–6 km · 纹白岩 6–0 km</span>
+    </div>
+    <div class="pause-map-legend" aria-hidden="true">
+      <span><i></i><b id="pauseMapLegendWave">真实波前截面</b></span>
+      <span><i class="warn"></i>正穿过空洞</span>
+      <span><i class="strata red"></i>纹白岩</span>
+      <span><i class="strata blue"></i>金刚岩</span>
+      <span><i class="hole"></i><b id="pauseMapLegendHole">新洞 / 来路</b></span>
+      <span><i class="old"></i>未填旧洞</span>
+      <span><i class="filled"></i>已填埋不绘制</span>
+      <span><i class="goal"></i>目标 / 冬冬</span>
+      <span><i class="rec"></i>推荐落点</span>
+    </div>
+    <p class="pause-map-hint"><span class="hint-wheel">滚轮缩放 · 拖动平移 · 双击复位</span><span class="hint-touch">双指缩放 · 拖动平移 · 双击复位</span></p>
+    <div class="pause-map-range" id="pauseMapRange" role="group" aria-label="三维地图视距" hidden>
+      <span>视距 / RANGE</span>
+      <button id="pauseMapLocal" type="button" aria-pressed="true" title="只显示身边的 190 m 调查球">局部</button>
+      <button id="pauseMapFull" type="button" aria-pressed="false" title="显示全部源头与当前活动的波前">全场</button>
+      <em id="pauseMapRangeScale" title="当前三维视图半径">190 m</em>
+    </div>
+    <div class="pause-map-actions">
+      <button id="pauseResume" class="primary">继续行动 <span>→</span></button>
+      <button id="pauseMenu" class="secondary">返回起点菜单</button>
+    </div>
+  </section>
+  <section id="help" class="dialog" hidden><div class="help-card"><span class="eyebrow">只要记住一跳</span><h2>等波。开洞。封住来路。</h2><div class="help-flow keyboard-help"><div><b>01</b><h3>找到下一处落点</h3><p>WASD 在洞内走动，空格真实起跳。开始后移动鼠标即可转头；自动锁定失败时照常移动，点击画面重试锁定，按住右键可拖出画面继续转头。V 重试锁定，滚轮调开洞斜距（准星旁的标签实时显示距离）。红球只推荐位置，不会替你开洞。</p></div><div><b>02</b><h3>看到亮蓝，再按左键</h3><p>首 1 km 安全教学没有探测，随时左键开洞，无需填充物。进入探测范围后，建议等亮蓝再开；提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。黑门从一点展开，约 0.3 秒后打开。</p></div><div><b>03</b><h3>按 F，走近并跳进黑门</h3><p>1 / 2 切换红袋 / 蓝袋，F 丢填充物，落地 1 秒后封洞；岩层从外到内是纹白岩 → 金刚岩 → 纹白岩（16–10 / 10–6 / 6–0 km），纹白岩用红袋、金刚岩用蓝袋，换层后要换袋。入口稍微悬空，走近后按空格、向前跳入；远处原地跳不会传送。出口在新洞上方；穿过后的旧洞口约 0.3 秒后收拢消失。门开低时，1.5 秒内按鼠标中键原地补洞。</p></div></div><div class="help-flow touch-help"><div><b>01</b><h3>左手摇杆，右手转向</h3><p>左下滑动虚拟摇杆移动，右侧画面拖动转头。摇杆推多少走多快，松手立即停下；两根手指可同时操作。横屏视野更宽，推荐横屏游玩。</p></div><div><b>02</b><h3>看到亮蓝，再点开洞</h3><p>底部“＋ / −”调开洞距离（0–58 m），准星对准推荐点。安全窗口打开时“开洞”亮蓝，再点右下大按钮。提前开洞不会被按钮拦截，但真实扫描波碰到空洞就会暴露。</p></div><div><b>03</b><h3>填充、跳跃、补洞</h3><p>门开后点“填充”丢下当前袋，点“跳跃”跳入黑门；底部切换红袋 / 蓝袋。门开低时“补洞”会闪烁，1.5 秒内点它。按住“快进”加速等待；右上暂停会冻结所有计时。</p></div></div><p class="help-note touch-help">触屏设置位于“老君的法宝（加强版） → 操作方式”，可强制切换自动 / 键鼠 / 触屏。左摇杆与右视角可同时使用；松手、暂停或切到后台都会清空输入。触屏下仍保留 Esc 暂停与 H 帮助。</p>
+<p class="help-note keyboard-help">三个阶段对应三次事件：单钟持续到 6 km；对方察觉后停机，静默段快速推进；到 1.5 km 五钟逐台重启，波前会先在岩层里走一段路，再进入扫描。Shift 只加速等待，临近信号自动恢复原速。静默段不需要填充物。Esc 暂停、释放鼠标并冻结所有计时，继续后重新进入视角控制；生命耗尽后须开始新行动，继续存档不会恢复生命。独立教学为完整 1 km、推荐 20 跳，不受缩距辅助影响。<br>实际扫描波与空洞球体相交才会命中；HUD 仅给出建议，五个源头高度参与距离计算。320 跳为推荐路线，偏离后推荐点会重新校验可达性。</p><button id="closeHelp" class="primary">明白了 <span>→</span></button></div></section>
+  <section id="assistPanel" class="assist-overlay" role="dialog" aria-modal="true" aria-labelledby="assistTitle" hidden>
+    <form id="assistForm" class="assist-card">
+      <div class="assist-heading"><div><span class="eyebrow">辅助终端 / ASSIST</span><h2 id="assistTitle">老君的法宝（加强版）</h2></div><button id="closeAssists" type="button" class="assist-close" aria-label="取消并关闭辅助设置">×</button></div>
+      <p class="assist-lead">把重复的交给辅助，把开洞的时机留给你。</p>
+      <div class="assist-options">
+        <label class="assist-row"><span><strong>操作方式</strong><small>自动跟随设备；也可强制使用键鼠或触屏。触屏推荐横屏。</small></span><select id="controlMode"><option value="auto">自动</option><option value="keyboard">键鼠</option><option value="touch">触屏</option></select></label>
+        <label class="assist-row"><span><strong>缩短行动距离</strong><small>正式行动含安全教学按比例缩短，单跳仍 ≤58 m。</small></span><select id="assistDistance"><option value="1">原程 · 16 km</option><option value="0.5">1/2 · 8 km</option><option value="0.25">1/4 · 4 km</option><option value="0.1">1/10 · 1.6 km</option></select></label>
+        <label class="assist-row"><span><strong>生命值</strong><small>扫描命中消耗 1 点，耗尽才失败。操作失误不豁免。</small></span><select id="assistLives"><option value="1">1 点 · 原规则</option><option value="3">3 点</option><option value="5">5 点</option><option value="10">10 点</option></select></label>
+        <label class="assist-row"><span><strong>吸附推荐落点</strong><small>自动对准实时推荐的三维位置与距离。</small></span><input id="assistSnap" type="checkbox" class="assist-switch"></label>
+        <label class="assist-row"><span><strong>自动丢填充物</strong><small>门打开后自动丢下当前填充物，静默段跳过。</small></span><input id="assistFill" type="checkbox" class="assist-switch"></label>
+        <label class="assist-row"><span><strong>自动切换填充物</strong><small>按岩层选红袋或蓝袋；关闭时按 1 / 2 切换。</small></span><input id="assistSwitch" type="checkbox" class="assist-switch"></label>
+        <label class="assist-row"><span><strong>自动跳跃</strong><small>填充物落地后跳入门；无探测段开门后直接跳。</small></span><input id="assistJump" type="checkbox" class="assist-switch"></label>
+      </div>
+      <div class="assist-preview" id="assistPreview" aria-live="polite"></div>
+      <p class="assist-note">设置用于新行动与试练。继续存档沿用存档设置。开洞仍需左键；门低时仍需鼠标中键补救。五钟按真实波场绕行，跳数是参考值。</p>
+      <div class="assist-actions"><button id="resetAssists" type="button">恢复正常难度</button><button class="primary" type="submit">保存设置 <span>→</span></button></div>
+    </form>
+  </section>
+  <div id="fatal" hidden><h2>三维画面未能启动</h2><p>请用 Edge 或 Chrome 打开，启用浏览器硬件加速，并保留同目录的 vendor 文件夹。</p><pre id="fatalDetail"></pre></div>
+</main>
+<script src="vendor/three.min.js"></script><script src="engine.js"></script><script src="player.js"></script><script src="scene.js"></script><script src="pause-map.js"></script><script src="touch.js"></script><script src="game.js"></script>
+</body></html>
