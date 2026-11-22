@@ -241,7 +241,6 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
     padding:0 0 calc(18px + env(safe-area-inset-bottom));font-size:9px;gap:10px;
   }
   body.touch-mode .menu-footer span:last-child{display:none}
-  body.touch-mode .console-caption{display:none}
 }
 @media (max-height:520px){
   body.touch-mode .menu-copy{
