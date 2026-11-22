@@ -13,7 +13,8 @@ const jsFiles = [
   'player.js',
   'scene.js',
   'pause-map.js',
-  'touch.js'
+  'touch.js',
+  'fireworks.js'
 ];
 
 let html = read('index.html');

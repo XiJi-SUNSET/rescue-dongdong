@@ -837,7 +837,7 @@
       this.caveCenter = new T.Vector3(0, P.radius, 0); this.sphereRadius = P.radius;
       this.camera.position.copy(this.baseEye);
       this.room = new T.Group(); this.scene.add(this.room);
-      this.atlas = paintAtlas(); this.cutPaint = cutPaintAtlas(); this.glowMap = glowTexture();
+      this.atlas = paintAtlas(); this.glowMap = glowTexture();
       this.rockUniforms = {
         atlas: { value: this.atlas }, fogColor: { value: color('#142a37') }, rockKind: { value: 0 },
         flamePosition: { value: new T.Vector3(5, 3, -9) }, portalPosition: { value: new T.Vector3(0, 2, 0) }, portalPower: { value: 0 },
@@ -1438,36 +1438,14 @@
       this.target.traverse(o => { o.renderOrder = 28; });
     }
 
-    cutMaterial(depthTest) {
-      return new T.ShaderMaterial({
-        uniforms: { cutSeed: { value: 0 }, cutKind: { value: 0 }, cutStyle: { value: 0 }, cutPaint: { value: this.cutPaint } },
-        vertexShader: cutVertex, fragmentShader: cutFragment, extensions: { derivatives: true },
-        transparent: true, depthTest, depthWrite: false, side: T.DoubleSide
-      });
-    }
-
-    applyCut(mesh, seed, kind) {
-      const u = mesh.material.uniforms;
-      u.cutSeed.value = seed;
-      u.cutKind.value = kind;
-      u.cutStyle.value = Math.floor(seed * .6180339887) % 4;
-    }
-
     makePortal() {
       const black = new T.MeshBasicMaterial({ color: '#000000', fog: false, toneMapped: false, opacity: 1, transparent: false, side: T.DoubleSide });
       this.portal = new T.Group(); this.portal.name = 'ground-entry'; this.scene.add(this.portal);
       this.portalInterior = new T.Mesh(new T.CircleGeometry(1, 128), black);
       this.portal.rotation.x = -Math.PI / 2; this.portal.add(this.portalInterior); this.portal.visible = false;
-      // The cut face is a sibling, not a portal child: the black disk keeps its
-      // exact one-mesh construction while the exposed rock gets its own depth.
-      this.portalCut = new T.Mesh(new T.PlaneGeometry(4.2, 4.2), this.cutMaterial(true));
-      this.portalCut.rotation.x = -Math.PI / 2; this.portalCut.visible = false; this.scene.add(this.portalCut);
       this.exitPortal = new T.Mesh(new T.CircleGeometry(1, 128), black);
       this.exitPortal.name = 'ceiling-exit'; this.exitPortal.rotation.x = Math.PI / 2;
       this.exitPortal.position.set(0, P.exitHeight, 0); this.exitPortal.scale.setScalar(P.portalRadius); this.scene.add(this.exitPortal);
-      this.exitCut = new T.Mesh(new T.PlaneGeometry(4.2, 4.2), this.cutMaterial(true));
-      this.exitCut.rotation.x = Math.PI / 2; this.exitCut.position.set(0, P.exitHeight - .0015, 0);
-      this.exitCut.visible = false; this.scene.add(this.exitCut);
       this.repairShell = new T.Mesh(new T.SphereGeometry(P.repairRadius, 96, 64), this.repairMaterial);
       this.repairShell.name = 'local-repair-cavity'; this.repairShell.visible = false; this.scene.add(this.repairShell);
     }
@@ -1538,10 +1516,6 @@
       const stage = e.stage || e.mode || 'single', player = e.localPlayer;
       const blueRock = !this._menu && (e.requiredFiller ? e.requiredFiller === 'blue' : stage === 'five');
       this.rockUniforms.rockKind.value = blueRock ? 1 : 0;
-      if (e.target && e.target.point) {
-        this._holeSeed = cutSeedOf(e.target.point);
-        this._holeKind = this.rockUniforms.rockKind.value;
-      }
       const basis = this.basis(e);
       // Until land confirms passage, a blocked low exit keeps the player on the
       // source side. Never replace a wide source room around an unmoved camera.
@@ -1612,7 +1586,7 @@
         this.target.position.copy(p); this.target.quaternion.copy(this.camera.quaternion);
         this.target.scale.setScalar(markerScale);
         this.targetRing.scale.setScalar(1 + Math.sin(t * 2.8) * .07);
-        const recommendationOpen = simTime >= Number(e.rec.go) && simTime < Number(e.rec.nextB) && simTime < Number(e.aDeadline);
+        const recommendationOpen = e.assists?.autoMark !== false && simTime >= Number(e.rec.go) && simTime < Number(e.rec.nextB) && simTime < Number(e.aDeadline);
         this.targetMat.color.set(recommendationOpen ? REC_OPEN : REC_CLOSED);
         this.targetOuterMat.color.set(recommendationOpen ? REC_OPEN_HALO : REC_HALO);
         this._targetMarker.copy(p).add(new T.Vector3(0, -.43, 0));
@@ -1631,10 +1605,6 @@
       if (entry) this.portal.position.set(entry.x, entry.y, entry.z);
       const formation = state === 'forming' ? smooth((simTime - (Number(e.openedAt) || 0)) / PORTAL_OPEN_SECONDS) : 1;
       this.portal.scale.setScalar(Math.max(.001, formation) * (entry?.radius || P.portalRadius));
-      this.portalCut.position.copy(this.portal.position); this.portalCut.position.y += .0015;
-      this.portalCut.scale.setScalar(this.portal.scale.x);
-      this.portalCut.visible = this.portal.visible && this.portal.scale.x > .003;
-      this.applyCut(this.portalCut, Number.isFinite(this._holeSeed) ? this._holeSeed : cutSeedOf(entry ? [entry.x, entry.y, entry.z] : e.pos), Number.isFinite(this._holeKind) ? this._holeKind : this.rockUniforms.rockKind.value);
       this.rockUniforms.entryCenter.value.copy(this.portal.position);
       this.rockUniforms.entryRadius.value = this.portal.visible ? this.portal.scale.x : 0;
       this.rockUniforms.portalPower.value = 0;
@@ -1644,9 +1614,6 @@
       this.exitPortal.visible = exitLife > 0;
       this.exitPortal.scale.setScalar(Math.max(.001, smooth(exitLife)) * P.portalRadius);
       this.exitPortal.position.set(0, P.exitHeight, 0);
-      this.exitCut.scale.setScalar(this.exitPortal.scale.x);
-      this.exitCut.visible = this.exitPortal.visible;
-      this.applyCut(this.exitCut, Number.isFinite(this._holeSeed) ? this._holeSeed : cutSeedOf(e.pos), Number.isFinite(this._holeKind) ? this._holeKind : this.rockUniforms.rockKind.value);
       // The blocked entry stays visible on the source side until repair completes.
       // There is no below-floor fake disk and no camera forced through solid rock.
       this.repairShell.visible = !this._menu && this.roomKind === 'sphere' && state === 'falling';
@@ -1757,10 +1724,6 @@
         equipmentVisible: this.startEquipment.visible,
         portal: { visible: this.portal.visible, geometry: this.portalInterior.geometry.type, color: this.portalInterior.material.color.getHexString(), fog: this.portalInterior.material.fog, opacity: this.portalInterior.material.opacity, position: this.portal.position.toArray(), scale: this.portal.scale.toArray(), normal: new T.Vector3(0, 0, 1).applyQuaternion(this.portal.quaternion).toArray() },
         exit: { visible: this.exitPortal.visible, position: this.exitPortal.position.toArray(), scale: this.exitPortal.scale.toArray(), closeAt: this.exitCloseAt, normal: new T.Vector3(0, 0, 1).applyQuaternion(this.exitPortal.quaternion).toArray() },
-        cut: {
-          portal: { visible: this.portalCut.visible, seed: this.portalCut.material.uniforms.cutSeed.value, style: this.portalCut.material.uniforms.cutStyle.value, kind: this.portalCut.material.uniforms.cutKind.value, plane: this.portalCut.geometry.type },
-          exit: { visible: this.exitCut.visible, seed: this.exitCut.material.uniforms.cutSeed.value, style: this.exitCut.material.uniforms.cutStyle.value, kind: this.exitCut.material.uniforms.cutKind.value, plane: this.exitCut.geometry.type }
-        },
         repair: { visible: this.repairShell.visible, radius: this.rockUniforms.repairRadius.value, center: this.repairShell.position.toArray() },
         waveOrigin: this.caveCenter.toArray(),
         menu: { visible: this._menu, sharedCamera: this.menuCamera === this.camera, startPose: this.getStartPose(), screens: this.menuScreens.length, screenFrame: this.menuScreenFrame,
@@ -1770,7 +1733,7 @@
     dispose() {
       if (this.disposed) return; this.disposed = true;
       root.removeEventListener('resize', this._onResize);
-      const geometries = new Set(), materials = new Set(), textures = new Set([this.atlas, this.cutPaint, this.glowMap]);
+      const geometries = new Set(), materials = new Set(), textures = new Set([this.atlas, this.glowMap]);
       for (const scene of [this.scene, this.menuScene]) scene.traverse(o => {
         if (o.geometry) geometries.add(o.geometry);
         if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => {

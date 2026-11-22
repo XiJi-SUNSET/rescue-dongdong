@@ -16,7 +16,6 @@ body.touch-mode.view-active #scene{cursor:default}
 body.touch-mode #lockBtn{display:none!important}
 body.touch-mode:not(.playing) .wordmark{display:none}
 body.touch-mode .wait-button{display:none!important}
-body.touch-mode .play-footer{display:none!important}
 body.touch-mode .icon-button kbd{display:none!important}
 body:not(.touch-mode) .touch-help{display:none!important}
 body.touch-mode .keyboard-help{display:none!important}
@@ -171,7 +170,6 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .top-actions{gap:2px;align-items:center}
   body.touch-mode .icon-button{padding:9px 7px;font-size:11px;min-height:40px}
   body.touch-mode .icon-button span{margin-left:3px}
-  body.touch-mode .chapter-top{display:none}
   body.touch-mode .pause-map-head{max-width:min(300px,58vw);padding:12px 16px 12px}
   body.touch-mode .pause-map-head .eyebrow{margin-bottom:6px;font-size:9px}
   body.touch-mode .pause-map-head h2{font-size:22px}
@@ -476,4 +474,77 @@ body.touch-mode .aim-info{
 body.touch-mode .toast{
   border-top:1px solid var(--touch-line);border-bottom:1px solid var(--touch-line);
   color:var(--touch-ink);text-shadow:var(--touch-text)
+}
+
+/* Pause map on touch: map first.
+   The dossier chrome shrinks into three corner notes and one bottom dock so the
+   radar keeps the centre of a phone screen. No extra panel may cover the map. */
+body.touch-mode .pause-map-head{
+  left:calc(10px + env(safe-area-inset-left));
+  top:calc(8px + env(safe-area-inset-top));
+  width:auto;max-width:min(208px,46vw);
+  padding:9px 11px 10px;border-width:2.5px;border-radius:14px;
+  box-shadow:3px 4px 0 var(--c-shadow),0 12px 28px rgba(0,0,0,.32);
+  transform:none;
+}
+body.touch-mode .pause-map-head::before{content:none;display:none}
+body.touch-mode .pause-map-head .eyebrow{
+  margin:0 0 4px;font-size:8px;letter-spacing:.15em;
+}
+body.touch-mode .pause-map-head h2{
+  font-size:17px;line-height:1.18;letter-spacing:.5px;
+}
+body.touch-mode .pause-map-head .rule,
+body.touch-mode .pause-map-head p{display:none}
+
+body.touch-mode .pause-map-frozen{
+  display:flex;align-items:baseline;gap:7px;
+  right:calc(10px + env(safe-area-inset-right));
+  top:calc(8px + env(safe-area-inset-top));
+  padding:6px 9px;border-width:2px;border-radius:10px;
+  font-size:8px;line-height:1.2;text-align:left;transform:none;
+  box-shadow:3px 3px 0 var(--c-shadow);
+}
+body.touch-mode .pause-map-frozen b{display:inline;font-size:10px}
+body.touch-mode .pause-map-frozen span{display:inline;font-size:8px}
+
+body.touch-mode .pause-map-strata{
+  display:block;
+  right:calc(10px + env(safe-area-inset-right));
+  top:calc(68px + env(safe-area-inset-top));
+  width:min(206px,52vw);padding:6px 9px 7px;border-width:2px;border-radius:12px;
+  transform:none;
+  box-shadow:3px 3px 0 var(--c-shadow),0 10px 22px rgba(0,0,0,.2);
+}
+body.touch-mode .pause-map-strata .eyebrow{font-size:8px;letter-spacing:.16em}
+body.touch-mode .pause-map-strata-bands{height:9px;margin:4px 0;border-width:1px}
+body.touch-mode .pause-map-strata strong{font-size:11px;line-height:1.24}
+body.touch-mode .pause-map-strata #pauseMapStrataNote{display:none}
+
+body.touch-mode .pause-map-legend,
+body.touch-mode .pause-map-hint{display:none!important}
+
+body.touch-mode .pause-map-actions{
+  bottom:calc(12px + env(safe-area-inset-bottom));
+  width:min(444px,calc(100% - 24px));gap:8px;
+}
+body.touch-mode .pause-map-actions button{
+  flex:1;min-width:0;height:45px;min-height:45px;padding:0 12px;
+  font-size:12px;box-shadow:3px 4px 0 rgba(8,7,5,.7);
+}
+body.touch-mode .pause-map-range{
+  bottom:calc(12px + env(safe-area-inset-bottom) + 57px);
+  padding:2px 3px 2px 8px;
+}
+
+@media (max-width:360px){
+  body.touch-mode .pause-map-head{max-width:44vw}
+  body.touch-mode .pause-map-head h2{font-size:14px;letter-spacing:.3px}
+  body.touch-mode .pause-map-frozen{gap:4px;padding:6px 7px}
+  body.touch-mode .pause-map-frozen b{font-size:9px}
+  body.touch-mode .pause-map-frozen span{font-size:7px}
+  body.touch-mode .pause-map-strata{width:min(206px,50vw)}
+}
+@media (max-height:520px){
+  body.touch-mode .menu-extra>.secondary{min-height:0;padding-top:4px;padding-bottom:4px}
 }

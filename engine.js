@@ -13,7 +13,7 @@ const WORLD={speed:10,period:10,bells:[{p:[-100,-40,0],phase:9.144966666810449},
 // Three 0.2 s input reactions + 0.3/0.2/0.4 s actions. Seal includes 0.4 s margin.
 // action is the minimum time the recommendation must stay usable after it opens.
 const TIMING={reaction:.2,readyGrace:.8,land:1.7,seal:1.9,action:.5,waveGuard:.03};
-const ASSIST_DEFAULTS=Object.freeze({distanceScale:1,snapAim:false,snapForce:false,maxLives:1,autoFill:false,autoSwitch:false,autoJump:false});
+const ASSIST_DEFAULTS=Object.freeze({distanceScale:1,snapAim:false,snapForce:false,maxLives:1,autoFill:false,autoSwitch:false,autoJump:false,autoMark:true});
 const ASSIST_REACTION=.14;
 // Fixed chapter-entry calibration for 1.4 m spheres (not per-leg phase changes).
 // The old zero offset placed the starting sphere inside source 4's wave.
@@ -24,6 +24,7 @@ function normalizeAssists(obj){
  if([1,.5,.25,.1].includes(input.distanceScale))out.distanceScale=input.distanceScale;
  if([1,3,5,10].includes(input.maxLives))out.maxLives=input.maxLives;
  for(const key of ['snapAim','snapForce','autoFill','autoSwitch','autoJump'])out[key]=input[key]===true;
+ if(typeof input.autoMark==='boolean')out.autoMark=input.autoMark;
  if(out.snapForce)out.snapAim=false;
  return out;
 }

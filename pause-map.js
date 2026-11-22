@@ -230,7 +230,21 @@
         ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 32);
         return canvas;
       };
-      this.sprites = { wave: sprite('192,231,246'), hole: sprite('245,253,255'), warm: sprite('255,166,142') };
+      // The volume stipple needs a compact core: the soft wave sprite spreads
+      // each grain into a halo, and thousands of halos read as a bright wash
+      // instead of individual points.
+      const grain = rgb => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 32;
+        const ctx = canvas.getContext('2d'), g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        g.addColorStop(0, `rgba(${rgb},1)`);
+        g.addColorStop(.46, `rgba(${rgb},1)`);
+        g.addColorStop(.74, `rgba(${rgb},.34)`);
+        g.addColorStop(1, `rgba(${rgb},0)`);
+        ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 32);
+        return canvas;
+      };
+      this.sprites = { wave: sprite('192,231,246'), grain: grain('206,240,255'), hole: sprite('245,253,255'), warm: sprite('255,166,142') };
       return this.sprites;
     }
 
@@ -328,10 +342,10 @@
           cy - (rx * screenUp[0] + ry * screenUp[1] + rz * screenUp[2]) * inv, z];
       };
 
-      ctx.fillStyle = '#020609'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#010407'; ctx.fillRect(0, 0, W, H);
       const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * .62);
-      bg.addColorStop(0, 'rgba(24,55,71,.22)');
-      bg.addColorStop(.56, 'rgba(6,20,29,.12)');
+      bg.addColorStop(0, 'rgba(16,38,50,.16)');
+      bg.addColorStop(.56, 'rgba(3,10,15,.07)');
       bg.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
       this.paintScatterGround(ctx, project, centre, planeY, survey);
@@ -407,13 +421,13 @@
           const t = clamp((q[2] - (dist - survey)) / (survey * 2), 0, 1);
           const nx = (px - source[0]) / r, ny = (py - source[1]) / r, nz = (pz - source[2]) / r;
           const grazing = Math.pow(clamp(1 - Math.abs(nx * view[0] + ny * view[1] + nz * view[2]), 0, 1), 2);
-          // The volume stipple is texture, not the message. Keep it dim so the
-          // five plane arcs stay the thing you read; shells already beyond the
-          // survey bubble must not sparkle like a starfield.
-          let size = (1.1 + rand() * 1.45) * (1.14 - .2 * t) * (1 + grazing * .85);
+          // The volume stipple is texture, not the message. A compact grain
+          // keeps each point legible without stacking into a bright wash; the
+          // five plane arcs still carry the reading.
+          let size = (1.25 + rand() * 1.5) * (1.14 - .2 * t) * (1 + grazing * .85);
           if (plan.main && rand() > .985) size += 2;
-          size = clamp(size * (plan.main ? 1.08 : .86), .9, plan.main ? 4.6 : 3);
-          const alpha = clamp((.12 + .25 * Math.pow(1 - t, 1.25) + .34 * grazing * (.55 + .45 * (1 - t))) * (plan.main ? 1 : .6), .06, .52);
+          size = clamp(size * (plan.main ? 1.08 : .86), .95, plan.main ? 4.6 : 3);
+          const alpha = clamp((.17 + .3 * Math.pow(1 - t, 1.25) + .38 * grazing * (.55 + .45 * (1 - t))) * (plan.main ? 1 : .62), .09, .62);
           const ai = Math.round(alpha * 20), si = Math.round(size * 2), key = ai * 100 + si;
           let bucket = buckets.get(key);
           if (!bucket) { bucket = { alpha: ai / 20, size: si / 2, points: [] }; buckets.set(key, bucket); }
@@ -426,7 +440,7 @@
         for (const bucket of buckets.values()) {
           ctx.globalAlpha = bucket.alpha;
           const size = bucket.size;
-          for (let i = 0; i < bucket.points.length; i += 2) ctx.drawImage(sprites.wave, bucket.points[i] - size / 2, bucket.points[i + 1] - size / 2, size, size);
+          for (let i = 0; i < bucket.points.length; i += 2) ctx.drawImage(sprites.grain, bucket.points[i] - size / 2, bucket.points[i + 1] - size / 2, size, size);
         }
         ctx.restore();
       }
@@ -503,10 +517,11 @@
         ctx.fillText('你', player[0] + 7, player[1] + 14);
         ctx.restore();
       }
-      this.paintScatterBellRail(ctx, shellStats.fronts, snapshot.scan, W, H);
+      const bellRail = this.paintScatterBellRail(ctx, shellStats.fronts, snapshot.scan, W, H);
 
       this.lastStats = {
         mode: 'scatter', surveyRadius: survey, shells: shells.length, sampledShells: plans.length,
+        bellRail,
         wavePoints, targetPoints: Math.round(requested * density), holes: holeMarks, holeCount: holes.length,
         view: { zoom: +this.view.zoom.toFixed(4), panX: +this.view.panX.toFixed(2), panY: +this.view.panY.toFixed(2), focal: +focal.toFixed(2) },
         goal: goalMark, rec: recMark,
@@ -633,10 +648,10 @@
       };
       const scale = focal / dist;
 
-      ctx.fillStyle = '#020609'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#010407'; ctx.fillRect(0, 0, W, H);
       const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * .66);
-      bg.addColorStop(0, 'rgba(24,55,71,.2)');
-      bg.addColorStop(.56, 'rgba(6,20,29,.1)');
+      bg.addColorStop(0, 'rgba(15,36,47,.14)');
+      bg.addColorStop(.56, 'rgba(3,9,13,.05)');
       bg.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
@@ -683,11 +698,12 @@
       }
 
       this.paintFieldPlayer(ctx, profile, focus, project, W, H);
-      this.paintScatterBellRail(ctx, fronts.mains, snapshot.scan, W, H);
+      const bellRail = this.paintScatterBellRail(ctx, fronts.mains, snapshot.scan, W, H);
       this.paintScale(ctx, W, H, scale);
 
       this.lastStats = {
         mode: 'scatter', range: 'field',
+        bellRail,
         surveyRadius: Math.max(40, Number(snapshot.radius) || 190),
         frameRadius: +profile.frameRadius.toFixed(1), fieldRadius: profile.fieldRadius,
         fieldWaves: profile.waves.length, drawnWaves: waveStats.drawn, waveSample: waveStats.sample,
@@ -736,7 +752,7 @@
       const fillRadius = Math.min(fieldRadius, Math.max(frameRadius * 2.4, 900));
       trace(fillRadius, 192);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(9,24,33,.68)'; ctx.fill();
+      ctx.fillStyle = 'rgba(4,12,18,.72)'; ctx.fill();
       if (fillRadius === fieldRadius && fieldRadius <= frameRadius * 1.015) {
         ctx.strokeStyle = 'rgba(138,192,210,.24)'; ctx.lineWidth = 1.2;
         ctx.setLineDash([5, 8]); ctx.stroke(); ctx.setLineDash([]);
@@ -844,9 +860,9 @@
           const t = clamp((q[2] - (cam[2] - profile.frameRadius)) / (profile.frameRadius * 2), 0, 1);
           const nx = (px - source[0]) / r, ny = (py - source[1]) / r, nz = (pz - source[2]) / r;
           const grazing = Math.pow(clamp(1 - Math.abs(nx * Math.cos(this.orbit.azimuth) + nz * Math.sin(this.orbit.azimuth)), 0, 1), 2);
-          let size = (1 + rand() * 1.35) * (1.12 - .16 * t) * (1 + grazing * .55);
-          size = clamp(size * (plan.main ? 1.05 : .8), .8, 2.7);
-          const alpha = clamp((.045 + .075 * Math.pow(1 - t, 1.2) + .1 * grazing * (.55 + .45 * (1 - t))) * (plan.danger ? 1.55 : 1), .025, .24);
+          let size = (1.15 + rand() * 1.5) * (1.12 - .16 * t) * (1 + grazing * .55);
+          size = clamp(size * (plan.main ? 1.05 : .8), .95, 3);
+          const alpha = clamp((.075 + .115 * Math.pow(1 - t, 1.2) + .14 * grazing * (.55 + .45 * (1 - t))) * (plan.danger ? 1.45 : 1), .045, .38);
           const ai = Math.round(alpha * 20), si = Math.round(size * 2), key = ai * 100 + si;
           let bucket = buckets.get(key);
           if (!bucket) { bucket = { alpha: ai / 20, size: si / 2, points: [] }; buckets.set(key, bucket); }
@@ -859,7 +875,7 @@
         for (const bucket of buckets.values()) {
           ctx.globalAlpha = bucket.alpha;
           const size = bucket.size;
-          for (let i = 0; i < bucket.points.length; i += 2) ctx.drawImage(sprites.wave, bucket.points[i] - size / 2, bucket.points[i + 1] - size / 2, size, size);
+          for (let i = 0; i < bucket.points.length; i += 2) ctx.drawImage(sprites.grain, bucket.points[i] - size / 2, bucket.points[i + 1] - size / 2, size, size);
         }
         ctx.restore();
       }
@@ -1335,12 +1351,21 @@
     }
 
     paintScatterBellRail(ctx, fronts, scan, W, H) {
-      if (W < 980 || H < 560) return;
+      if (W < 980 || H < 560) return null;
       const rows = fronts.filter(plan => plan.main && plan.front).sort((a, b) => a.bell - b.bell);
-      if (!rows.length) return;
+      if (!rows.length) return null;
       const speed = Number(scan?.speed) || 10, period = Number(scan?.period) || 10;
-      const w = 286, x = W - 24 - w, y = 244;
+      const w = 286, x = W - 24 - w;
       const h = 30 + rows.length * 20 + 8;
+      // The strata dossier above is DOM, so its height follows the viewport and
+      // font metrics. Measure its bottom instead of trusting a fixed y; at
+      // narrow widths the note wraps and grows straight into the rail.
+      const host = this.canvas.parentElement;
+      const hostRect = host?.getBoundingClientRect();
+      const strataRect = host?.querySelector('.pause-map-strata')?.getBoundingClientRect();
+      const cardBottom = hostRect && strataRect && strataRect.height > 0
+        ? strataRect.bottom - hostRect.top : 0;
+      const y = +clamp(Math.max(244, cardBottom + 18), 0, Math.max(244, H - h - 24)).toFixed(2);
       ctx.save();
       ctx.fillStyle = 'rgba(4,14,20,.72)'; ctx.strokeStyle = 'rgba(176,222,238,.24)'; ctx.lineWidth = 1;
       ctx.fillRect(x, y, w, h); ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
@@ -1365,6 +1390,7 @@
         }
       });
       ctx.restore();
+      return { x, y, w, h, cardBottom: +cardBottom.toFixed(2) };
     }
 
     paintBackdrop(ctx, W, H, radius, scale, cx, cy) {

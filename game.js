@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 const $=id=>document.getElementById(id), UI={};
-['menu','hud','dialog','help','guide','toast','stageLabel','remaining','jumpCount','routeProgress','stratum','waveMode','heightInfo','targetLabel','targetDot','targetTitle','targetDistance','targetHint','goalLabel','crosshair','aimInfo','aimTag','signalDot','signalText','comms','commsText','ownWave','aimWave','recWave','ownWaveRow','aimWaveRow','recWaveRow','ownWaveUnit','aimWaveUnit','recWaveUnit','bagIcon','bagName','sealInfo','saveNote','chapterTop','warp','assistPanel','assistHud','livesReadout','activeAssists','pauseMap','pauseMapCanvas','pauseMapMeta','pauseMapClock','pauseMapStage','pauseMapLegendWave','pauseMapLegendHole','pauseMapStrataBands','pauseMapStrataNow','pauseMapStrataNote','pauseMapRange','pauseMapLocal','pauseMapFull','pauseMapRangeScale','pauseResume','pauseMenu','guideScroll'].forEach(id=>UI[id]=$(id));
+['menu','hud','dialog','help','guide','toast','stageLabel','remaining','jumpCount','routeProgress','stratum','waveMode','heightInfo','targetLabel','targetDot','targetTitle','targetDistance','targetHint','goalLabel','goalDistance','crosshair','aimInfo','aimTag','signalDot','signalText','comms','commsText','ownWave','aimWave','recWave','ownWaveRow','aimWaveRow','recWaveRow','ownWaveUnit','aimWaveUnit','recWaveUnit','bagIcon','bagName','sealInfo','warp','modePanel','assistPanel','assistHud','livesReadout','activeAssists','pauseMap','pauseMapCanvas','pauseMapMeta','pauseMapClock','pauseMapStage','pauseMapLegendWave','pauseMapLegendHole','pauseMapStrataBands','pauseMapStrataNow','pauseMapStrataNote','pauseMapRange','pauseMapLocal','pauseMapFull','pauseMapRangeScale','pauseResume','pauseMenu','guideScroll'].forEach(id=>UI[id]=$(id));
 const ASSIST_KEY='rescue-dongdong-assists-v1',CONTROL_KEY='rescue-dongdong-controls-v1';
 let assistSettings=Rescue.normalizeAssists();try{assistSettings=Rescue.normalizeAssists(JSON.parse(localStorage.getItem(ASSIST_KEY)));}catch{}
 let controlMode='auto';try{const stored=JSON.parse(localStorage.getItem(CONTROL_KEY));if(stored&&['auto','keyboard','touch'].includes(stored.mode))controlMode=stored.mode;}catch{}
@@ -9,13 +9,17 @@ const coarsePointer=()=>window.matchMedia?.('(pointer: coarse)').matches||(navig
 const resolveControlMode=()=>controlMode==='touch'||(controlMode==='auto'&&coarsePointer());
 let touchMode=resolveControlMode(),touchControls=null;
 document.body.classList.toggle('touch-mode',touchMode);
-const SAVE_KEY='rescue-dongdong-save-v2';let scene,engine,player,pauseMapView=null,pauseMapTimer=0,lastFrame=0,dialogAction=null,dialogAlt=null,helpWasPaused=false,toastUntil=0,frameCount=0,muted=false,pauseMapRange='local',pauseMapContext=null;
+const SAVE_KEY='rescue-dongdong-save-v2';let scene,engine,player,pauseMapView=null,pauseMapTimer=0,lastFrame=0,dialogAction=null,dialogAlt=null,helpWasPaused=false,toastUntil=0,frameCount=0,muted=false,pauseMapRange='local',pauseMapContext=null,fireworks=null;
 const errors=[];window.addEventListener('error',e=>errors.push(e.message));window.addEventListener('unhandledrejection',e=>errors.push(String(e.reason)));
 const finite=n=>Number.isFinite(n)&&n<1e9;
 const sec=n=>finite(n)?Math.max(0,n).toFixed(1):'—';
 let saved=null;try{const value=JSON.parse(localStorage.getItem(SAVE_KEY));if(value&&value.version===2&&Array.isArray(value.pos)&&value.pos.length===3&&value.pos.every(Number.isFinite)&&['training','single','silent','five'].includes(value.stage)&&Number.isFinite(value.jumps)&&value.jumps>=0&&value.jumps<2000)saved=value;}catch{}
 $('continueBtn').hidden=!saved;if(saved)$('startBtn').innerHTML='开始新行动 <span>→</span>';
 const km=n=>Number((n/1000).toFixed(3)).toString();
+const goalDistanceLabel=n=>{
+ const metres=Math.max(0,n);
+ return metres>=1000?(metres/1000).toFixed(2).replace(/\.?0+$/,'')+' km':Math.round(metres)+' m';
+};
 const bandName=f=>f==='blue'?'金刚岩':'纹白岩';
 const bagName=f=>f==='blue'?'蓝袋':'红袋';
 const bandLabel=f=>f==='blue'?'金刚岩':'纹白岩';
@@ -25,13 +29,15 @@ function updateMenu(){
  const a=assistSettings,names=enabledAssists(a);
  $('menuDistance').innerHTML=km(16000*a.distanceScale)+'<small>km</small>';$('menuJumps').innerHTML=Math.ceil(320*a.distanceScale)+'<small>跳</small>';$('menuLives').innerHTML=a.maxLives+'<small>次</small>';
  $('assistStatus').textContent=names.length?names.length+' 项辅助':'未启用';$('assistStatus').classList.toggle('enabled',!!names.length);
+ const modeLabel=controlMode==='auto'?'自动 · '+(touchMode?'触屏':'键鼠'):controlMode==='touch'?'触屏':'键鼠';
+ $('modeStatus').textContent=modeLabel;
  const modeNote=touchMode?'触屏操作 · 左手摇杆 / 右手转向':'鼠标与键盘 · 离线游玩';
  $('menuAssistNote').textContent=names.length?'老君的法宝（加强版） · '+names.join(' / ')+'\n'+modeNote+'\n新行动生效，继续存档沿用原设置。':'正常难度 · 所有辅助关闭\n'+modeNote;
  $('startBtn').innerHTML=(saved?'开始新行动':'开始游戏')+' <span>→</span>';
 }
-function readAssistForm(){return Rescue.normalizeAssists({distanceScale:Number($('assistDistance').value),maxLives:Number($('assistLives').value),snapAim:$('assistSnap').checked,snapForce:$('assistSnapForce').checked,autoFill:$('assistFill').checked,autoSwitch:$('assistSwitch').checked,autoJump:$('assistJump').checked});}
-function previewAssists(){const a=readAssistForm(),count=enabledAssists(a).length;$('assistPreview').textContent=km(16000*a.distanceScale)+' km · 约 '+Math.ceil(320*a.distanceScale)+' 跳 · '+a.maxLives+' 点生命'+(count?' · '+count+' 项辅助启用':' · 正常难度');}
-function fillAssistForm(a){a=Rescue.normalizeAssists(a);$('controlMode').value=controlMode;$('assistDistance').value=String(a.distanceScale);$('assistLives').value=String(a.maxLives);$('assistSnap').checked=a.snapAim;$('assistSnapForce').checked=a.snapForce;$('assistFill').checked=a.autoFill;$('assistSwitch').checked=a.autoSwitch;$('assistJump').checked=a.autoJump;previewAssists();}
+function readAssistForm(){return Rescue.normalizeAssists({distanceScale:Number($('assistDistance').value),maxLives:Number($('assistLives').value),snapAim:$('assistSnap').checked,snapForce:$('assistSnapForce').checked,autoFill:$('assistFill').checked,autoSwitch:$('assistSwitch').checked,autoJump:$('assistJump').checked,autoMark:$('assistMark').checked});}
+function previewAssists(){const a=readAssistForm(),count=enabledAssists(a).length;$('assistPreview').textContent=km(16000*a.distanceScale)+' km · 约 '+Math.ceil(320*a.distanceScale)+' 跳 · '+a.maxLives+' 点生命'+(count?' · '+count+' 项辅助启用':' · 正常难度')+(a.autoMark?' · 自动标绿开':' · 自动标绿关');}
+function fillAssistForm(a){a=Rescue.normalizeAssists(a);$('assistDistance').value=String(a.distanceScale);$('assistLives').value=String(a.maxLives);$('assistSnap').checked=a.snapAim;$('assistSnapForce').checked=a.snapForce;$('assistFill').checked=a.autoFill;$('assistSwitch').checked=a.autoSwitch;$('assistJump').checked=a.autoJump;$('assistMark').checked=a.autoMark;previewAssists();}
 function setControlMode(mode,{store=false,announce=false}={}){
  if(!['auto','keyboard','touch'].includes(mode))return false;
  controlMode=mode;const wasTouch=touchMode;touchMode=resolveControlMode();
@@ -44,6 +50,9 @@ function setControlMode(mode,{store=false,announce=false}={}){
  if(announce&&touchMode!==wasTouch)toast(touchMode?'触屏操作已启用 · 推荐横屏':'键鼠操作已启用');
  updateMenu();return true;
 }
+function syncModePanel(){document.querySelectorAll('#modePanel .mode-option').forEach(button=>{const selected=button.dataset.mode===controlMode;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});}
+function closeModePanel(){UI.modePanel.hidden=true;$('modeBtn').focus();}
+function openModePanel(){syncModePanel();UI.modePanel.hidden=false;$('closeMode').focus();}
 function closeAssists(){UI.assistPanel.hidden=true;$('assistBtn').focus();}
 function openAssists(){fillAssistForm(assistSettings);UI.assistPanel.hidden=false;$('closeAssists').focus();}
 updateMenu();
@@ -56,16 +65,16 @@ class Sound{
  tone(freq,duration=.15,type='sine',volume=.4,delay=0){if(muted||!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain(),t=this.ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(freq,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(volume,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+duration);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+duration+.02);}
  cue(type){const cues={portal:[294,440],fill:[125,96],jump:[210,510],go:[660,880],fail:[130,92],low:[370,277],repair:[294,588],win:[294,370,440,588]};(cues[type]||[220]).forEach((f,i)=>this.tone(f,type==='win'?.8:.3,'sine',.38,i*.08));}
  play(name,{volume=.6}={}){if(muted)return;const clip=new Audio(audioSrc(name));clip.volume=volume;this.layers.add(clip);clip.addEventListener('ended',()=>this.layers.delete(clip),{once:true});clip.play().catch(()=>{});return clip;}
- jump(){this.jumpIndex=this.jumpIndex%2+1;this.play('jump-'+this.jumpIndex,{volume:this.jumpIndex===1?.74:.50});}
+ jump(){this.jumpIndex=this.jumpIndex%2+1;this.play('jump-'+this.jumpIndex,{volume:this.jumpIndex===1?.52:.38});}
  pickMeow(){if(!this.meowBag.length){const bag=[1,2,3,4,5];for(let i=bag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]];}// Avoid repeating the previous bag's last take at the seam.
   if(bag[bag.length-1]===this.lastMeow)[bag[0],bag[bag.length-1]]=[bag[bag.length-1],bag[0]];this.meowBag=bag;}this.lastMeow=this.meowBag.pop();return this.lastMeow;}
- meow(delay=0){const name='meow-'+this.pickMeow(),serial=this.serial;if(delay>0)setTimeout(()=>{if(serial===this.serial&&!muted)this.play(name,{volume:.84});},delay*1000);else this.play(name,{volume:.84});}
- land(){this.play('land',{volume:.42});this.meow(.06);}
+ meow(delay=0){const name='meow-'+this.pickMeow(),serial=this.serial;if(delay>0)setTimeout(()=>{if(serial===this.serial&&!muted)this.play(name,{volume:1});},delay*1000);else this.play(name,{volume:1});}
+ land(){this.play('land',{volume:.30});this.meow(.06);}
  stopClip(){this.serial++;for(const clip of this.layers){try{clip.pause();}catch{}}this.layers.clear();}
  stop(){this.stopClip();}
 }
 const sound=new Sound();
-const BGM_TRACKS={early:{name:'bgm-early',volume:.40},five:{name:'bgm-five',volume:.31}};
+const BGM_TRACKS={early:{name:'bgm-early',volume:.55},five:{name:'bgm-five',volume:.42}};
 class Music{
  constructor(){this.tracks=new Map();this.levels=new Map();this.routes=new Map();this.fadeOuts=new Map();this.current=null;this.transition=null;this.muted=false;this.ducked=false;this.stopped=true;}
  track(key){if(!this.tracks.has(key)){const clip=new Audio(audioSrc(BGM_TRACKS[key].name));clip.loop=true;clip.preload='auto';clip.volume=0;this.tracks.set(key,clip);this.levels.set(key,0);}return this.tracks.get(key);}
@@ -74,8 +83,13 @@ class Music{
   if(this.routes.has(key))return true;
   const ctx=sound.ctx;if(!ctx)return false;
   if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+  const clip=this.track(key);
+  // Chrome/Edge feed a file:// media element into Web Audio as a cross-origin
+  // source and output pure silence. The single-file build uses data: URLs,
+  // which route fine, so only the split desktop build opened from disk falls
+  // back to element volume (crossfade and pause ducking still run on volume).
+  if(location.protocol==='file:'&&/^file:/i.test(clip.src))return false;
   try{
-   const clip=this.track(key);
    const source=ctx.createMediaElementSource(clip),gain=ctx.createGain();
    gain.gain.value=0;source.connect(gain);gain.connect(ctx.destination);
    clip.volume=1;this.routes.set(key,{source,gain});return true;
@@ -152,6 +166,27 @@ class Music{
  }
 }
 const music=new Music();
+// The menu uses the same opening-cave track. Browsers only allow audio after a
+// gesture, so the first click/keypress starts the loop; start() then reuses the
+// same element and the cave begins without restarting or rewinding the music.
+function playMenuMusic(fade=2.6){
+ if(!UI.menu||UI.menu.hidden||muted)return false;
+ sound.init();
+ music.play('early',{fade});
+ return true;
+}
+function armMenuMusic(){
+ let armed=true;
+ const unlock=()=>{
+  if(!armed)return;
+  armed=false;
+  document.removeEventListener('pointerdown',unlock,true);
+  document.removeEventListener('keydown',unlock,true);
+  playMenuMusic();
+ };
+ document.addEventListener('pointerdown',unlock,true);
+ document.addEventListener('keydown',unlock,true);
+}
 function toast(text){UI.toast.textContent=text;UI.toast.classList.add('show');toastUntil=performance.now()+2200;}
 // Comms feed: one transmission at a time, queued so rapid stage changes are
 // read in order. Times are frozen while the mission is paused.
@@ -195,9 +230,9 @@ function restorePlayer(snapshot){
  const portal=snapshot.portal;if(portal&&(![portal.x,portal.y,portal.z,portal.radius].every(Number.isFinite)||portal.radius!==RescuePlayer.PHYSICS.portalRadius))return false;
  player.position=snapshot.position.slice();player.velocity=snapshot.velocity.slice();player.yaw=0;player.pitch=0;player.look(snapshot.yaw,snapshot.pitch);player.grounded=!!snapshot.grounded;player.portal=portal?{...portal}:null;player._jumped=!!snapshot.jumped;player._portalConsumed=!!snapshot.portalConsumed;player.clearInput();return true;
 }
-function persist(){if(engine.mode!=='campaign'||['menu','won'].includes(engine.state))return;try{const current=engine.exportSave(),physical=current.engineVersion>=6,checkpoint=physical?current:engine.checkpoint||current;saved={...checkpoint,lowUsed:engine.lowUsed||checkpoint.lowUsed,elapsed:engine.elapsed,failures:engine.failures,lives:engine.lives,scanHits:engine.scanHits,fillerType:engine.fillerType};if(physical)saved.localPlayer=playerSnapshot();localStorage.setItem(SAVE_KEY,JSON.stringify(saved));UI.saveNote.textContent='已记录行动状态 · 可随时暂停';}catch{UI.saveNote.textContent='浏览器未允许存档 · 请勿关闭本页';}}
+function persist(){if(engine.mode!=='campaign'||['menu','won'].includes(engine.state))return;try{const current=engine.exportSave(),physical=current.engineVersion>=6,checkpoint=physical?current:engine.checkpoint||current;saved={...checkpoint,lowUsed:engine.lowUsed||checkpoint.lowUsed,elapsed:engine.elapsed,failures:engine.failures,lives:engine.lives,scanHits:engine.scanHits,fillerType:engine.fillerType};if(physical)saved.localPlayer=playerSnapshot();localStorage.setItem(SAVE_KEY,JSON.stringify(saved));}catch{}}
 function showDialog(kicker,title,text,primary,action,secondary='返回起点菜单',alt=toMenu){
- commsClear();music.stop({fade:1.1});releaseView();$('dialogKicker').textContent=kicker;$('dialogTitle').textContent=title;$('dialogText').textContent=text;$('dialogPrimary').innerHTML=primary+' <span>→</span>';$('dialogSecondary').textContent=secondary;dialogAction=action;dialogAlt=alt;UI.dialog.hidden=false;
+ fireworks?.stop();commsClear();releaseView();$('dialogKicker').textContent=kicker;$('dialogTitle').textContent=title;$('dialogText').textContent=text;$('dialogPrimary').innerHTML=primary+' <span>→</span>';$('dialogSecondary').textContent=secondary;dialogAction=action;dialogAlt=alt;UI.dialog.hidden=false;
 }
 const dot=(a,b)=>a.reduce((n,v,i)=>n+v*b[i],0);
 let lastLandingAt=-Infinity,arrivalLandingPending=false;
@@ -236,8 +271,8 @@ function onEvent(event){
  case 'repair':sound.cue('repair');break;
  case 'hint':toast(event.text);break;
  case 'scanHit':sound.cue('low');toast('扫描命中 · 生命剩余 '+engine.lives+' / '+engine.assists.maxLives);UI.warp.classList.remove('hit');void UI.warp.offsetWidth;UI.warp.classList.add('hit');persist();break;
- case 'fail':{arrivalLandingPending=false;sound.stop();sound.cue('fail');const exhausted=engine.lives<=0;$('dialogStats').textContent='已完成 '+engine.jumps+' 跳 · '+(exhausted?'生命耗尽':'行动已停止');showDialog('空洞暴露 / MISSION FAILED','任务失败——空洞暴露',event.reason,exhausted?'开始新行动':'重试这一跳',exhausted?()=>start(engine.mode):retry);break;}
- case 'win':arrivalLandingPending=false;sound.stop();sound.cue('win');if(engine.mode==='campaign'){try{localStorage.removeItem(SAVE_KEY);}catch{}saved=null;}$('dialogStats').textContent='实际 '+engine.jumps+' 跳 · '+Math.floor(engine.elapsed/60)+' 分 '+Math.floor(engine.elapsed%60)+' 秒 · 重试 '+engine.failures+' 次'+(enabledAssists(engine.assists).length?' · 辅助行动 / 受击 '+engine.scanHits+' 次':'');showDialog(engine.mode==='five'?'五钟试练完成':'行动完成 / MISSION COMPLETE','恭喜你，救到了冬冬。','最后一处空洞与淡蓝光团重合。冬冬已经安全了。行动到此结束，不需要撤离。','回到起点',toMenu,'再走一次五钟段',()=>start('five'));break;
+ case 'fail':{arrivalLandingPending=false;sound.stop();music.stop({fade:1.1});sound.cue('fail');const exhausted=engine.lives<=0;$('dialogStats').textContent='已完成 '+engine.jumps+' 跳 · '+(exhausted?'生命耗尽':'行动已停止');showDialog('空洞暴露 / MISSION FAILED','任务失败——空洞暴露',event.reason,exhausted?'开始新行动':'重试这一跳',exhausted?()=>start(engine.mode):retry);break;}
+ case 'win':arrivalLandingPending=false;sound.stop();music.stop({fade:1.1});sound.cue('win');if(engine.mode==='campaign'){try{localStorage.removeItem(SAVE_KEY);}catch{}saved=null;}$('dialogStats').textContent='实际 '+engine.jumps+' 跳 · '+Math.floor(engine.elapsed/60)+' 分 '+Math.floor(engine.elapsed%60)+' 秒 · 重试 '+engine.failures+' 次'+(enabledAssists(engine.assists).length?' · 辅助行动 / 受击 '+engine.scanHits+' 次':'');showDialog(engine.mode==='five'?'五钟试练完成':'行动完成 / MISSION COMPLETE','恭喜你，救到了冬冬。','最后一处空洞与淡蓝光团重合。冬冬已经安全了。行动到此结束，不需要撤离。','回到起点',toMenu,'再走一次五钟段',()=>start('five'));fireworks?.start();break;
  case 'silence':persist();sound.stop();commsSay('撼地钟停摆了。趁静默快走，开洞传送，不用封洞。',{hold:7200});break;
  case 'continue':break;
  case 'trainingDone':persist();commsSay('已经进入感应区域，稍等。',{delay:.4,hold:6200});break;
@@ -246,15 +281,15 @@ function onEvent(event){
 }
 function start(mode='campaign',save=null){
  pauseMapRange='local';pauseMapContext=null;
- sound.init();sound.stop();arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();UI.menu.hidden=true;UI.hud.hidden=false;UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;UI.assistPanel.hidden=true;document.body.classList.add('playing');$('game').focus();engine.start(mode,save,assistSettings);engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:mode==='five'?1.4:2.2});
+ sound.init();sound.stop();fireworks?.stop();arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();UI.menu.hidden=true;UI.hud.hidden=false;UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;UI.modePanel.hidden=true;UI.assistPanel.hidden=true;document.body.classList.add('playing');$('game').focus();engine.start(mode,save,assistSettings);engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:mode==='five'?1.4:2.2});
  if(!save){const intro=mode==='tutorial'?'这里是安全区，没有探测。左键开洞，走近黑门，空格跳入；填充物先不用。':mode==='five'?'五钟段开始。波会从后面追上来，先跳三次找节奏。':'安全教学还有 '+km(engine.rules.training)+' km。先熟悉起跳和落地。';commsSay(intro,{delay:.9,hold:6600});}
  const rules=engine.rules;$('stationStart').textContent=km(rules.start)+' km';$('stationTraining').textContent=km(rules.trainingEnd);$('stationSilent').textContent=km(rules.silent);$('stationFive').textContent=km(rules.five);
  if(save?.engineVersion>=6&&!restorePlayer(save.localPlayer)&&['forming','portal','throwing','packed','jumping','low','falling'].includes(engine.state))player.placePortal();
  if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'生命已耗尽，请开始新行动。'});return;}
  persist();lastFrame=performance.now();enterView();
 }
-function retry(){const snapshot=playerSnapshot();UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;resetPauseOverlay();arrivalLandingPending=false;commsClear();commsEdges.clear();sound.stop();engine.retry();engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:1.2});document.body.classList.add('playing');if(engine.exportSave().engineVersion>=6)restorePlayer(snapshot);if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'行动已经失败，请开始新行动。'});return;}lastFrame=performance.now();enterView();}
-function toMenu(){persist();sound.stop();music.stop({fade:.5});arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();releaseView();engine.reset();resetPlayer();UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;UI.assistPanel.hidden=true;UI.hud.hidden=true;UI.menu.hidden=false;document.body.classList.remove('playing');$('continueBtn').hidden=!saved;updateMenu();}
+function retry(){const snapshot=playerSnapshot();fireworks?.stop();UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;resetPauseOverlay();arrivalLandingPending=false;commsClear();commsEdges.clear();sound.stop();engine.retry();engine.paused=false;music.play(engine.stage==='five'?'five':'early',{fade:1.2});document.body.classList.add('playing');if(engine.exportSave().engineVersion>=6)restorePlayer(snapshot);if(engine.state==='failed'){onEvent({type:'fail',reason:engine.lastReason||'行动已经失败，请开始新行动。'});return;}lastFrame=performance.now();enterView();}
+function toMenu(){persist();sound.stop();fireworks?.stop();arrivalLandingPending=false;commsClear();commsEdges.clear();resetPauseOverlay();releaseView();engine.reset();resetPlayer();UI.dialog.hidden=true;UI.help.hidden=true;UI.guide.hidden=true;UI.modePanel.hidden=true;UI.assistPanel.hidden=true;UI.hud.hidden=true;UI.menu.hidden=false;document.body.classList.remove('playing');$('continueBtn').hidden=!saved;updateMenu();playMenuMusic(1.4);}
 function resetPauseOverlay(){
  if(pauseMapTimer){clearTimeout(pauseMapTimer);pauseMapTimer=0;}
  if(UI.pauseMap){UI.pauseMap.classList.remove('is-visible');UI.pauseMap.hidden=true;}
@@ -320,7 +355,7 @@ function openPauseMap(){
  if(pauseMapTimer){clearTimeout(pauseMapTimer);pauseMapTimer=0;}
  engine.paused=true;persist();sound.stop();releaseView();
  scene.setPause(true);
- UI.dialog.hidden=true;UI.help.hidden=true;UI.assistPanel.hidden=true;
+ UI.dialog.hidden=true;UI.help.hidden=true;UI.modePanel.hidden=true;UI.assistPanel.hidden=true;
  const scatterStage=engine.stage==='five';
  const snapshot=engine.pauseSnapshot({radius:scatterStage?190:80});
  const holes=snapshot.holes||[],count=kind=>holes.filter(hole=>hole.kind===kind).length;
@@ -395,22 +430,28 @@ function closeGuide({restore=true}={}){
  const target=guideReturnFocus;guideReturnFocus=null;
  if(restore){const next=target&&target.isConnected&&typeof target.focus==='function'?target:$('guideBtn');next.focus({preventScroll:true});}
 }
-try{if(!window.THREE)throw new Error('本地 Three.js 未加载');if(!window.RescuePlayer)throw new Error('本地移动控制器未加载');if(!window.RescuePauseMap)throw new Error('暂停地图未加载');if(!window.RescueTouch)throw new Error('本地触屏控制器未加载');player=new RescuePlayer.Player();scene=new CaveScene($('scene'));engine=new Rescue.Engine({onEvent,externalJumpControl:true,holeRadius:RescuePlayer.PHYSICS.radius});engine.localPlayer=player;pauseMapView=new RescuePauseMap.PauseMapView(UI.pauseMapCanvas);
+try{if(!window.THREE)throw new Error('本地 Three.js 未加载');if(!window.RescuePlayer)throw new Error('本地移动控制器未加载');if(!window.RescuePauseMap)throw new Error('暂停地图未加载');if(!window.RescueTouch)throw new Error('本地触屏控制器未加载');player=new RescuePlayer.Player();scene=new CaveScene($('scene'));engine=new Rescue.Engine({onEvent,externalJumpControl:true,holeRadius:RescuePlayer.PHYSICS.radius});engine.localPlayer=player;pauseMapView=new RescuePauseMap.PauseMapView(UI.pauseMapCanvas);fireworks=window.RescueFireworks?new RescueFireworks($('dialogFireworks')):null;
 touchControls=new RescueTouch.TouchControls({getEngine:()=>engine,getPlayer:()=>player,canInput:()=>viewActive&&inputActive(),look:()=>syncAim(),settle:settleAim,stepDistance:d=>syncAim(engine.distance+d),fast:on=>{engine.fast=on;},focusGame:()=>$('game').focus({preventScroll:true})});touchControls.setActive(touchMode);}catch(error){$('fatal').hidden=false;$('fatalDetail').textContent=error.message;errors.push(error.message);return;}
 $('startBtn').addEventListener('click',()=>{if(saved){$('dialogStats').textContent='现有记录：'+saved.jumps+' 跳';showDialog('新行动','从 '+km(16000*assistSettings.distanceScale)+' km 重新开始？','现有正式行动进度会被新的行动覆盖，并使用当前辅助设置。','重新开始',()=>start('campaign'),'保留记录，继续上次',()=>start('campaign',saved));}else start('campaign');});
-$('continueBtn').addEventListener('click',()=>start('campaign',saved));$('fiveBtn').addEventListener('click',()=>start('five'));$('closeHelp').addEventListener('click',toggleHelp);$('guideBtn').addEventListener('click',openGuide);$('closeGuide').addEventListener('click',()=>closeGuide());$('guideStart').addEventListener('click',()=>{closeGuide({restore:false});$('startBtn').click();});$('pauseBtn').addEventListener('click',()=>togglePause());$('dialogPrimary').addEventListener('click',()=>dialogAction?.());$('dialogSecondary').addEventListener('click',()=>dialogAlt?.());
+$('continueBtn').addEventListener('click',()=>start('campaign',saved));$('fiveBtn').addEventListener('click',()=>start('five'));$('closeHelp').addEventListener('click',toggleHelp);$('guideBtn').addEventListener('click',openGuide);$('closeGuide').addEventListener('click',()=>closeGuide());$('guideStart').addEventListener('click',()=>{closeGuide({restore:false});$('startBtn').click();});$('pauseBtn').addEventListener('click',()=>togglePause());$('dialogPrimary').addEventListener('click',()=>{fireworks?.stop();dialogAction?.();});$('dialogSecondary').addEventListener('click',()=>{fireworks?.stop();dialogAlt?.();});
 UI.guide.addEventListener('pointerdown',event=>{if(event.target===UI.guide)closeGuide();});
 $('pauseResume').addEventListener('click',()=>togglePause(false));$('pauseMenu').addEventListener('click',()=>{resetPauseOverlay();toMenu();});
 UI.pauseMapLocal.addEventListener('click',()=>setPauseMapRange('local'));UI.pauseMapFull.addEventListener('click',()=>setPauseMapRange('field'));
-$('soundBtn').addEventListener('click',()=>{muted=!muted;$('soundBtn').querySelector('span').textContent=muted?'关':'开';music.setMuted(muted);if(muted)sound.stop();else sound.init();});
+$('soundBtn').addEventListener('click',()=>{muted=!muted;$('soundBtn').querySelector('span').textContent=muted?'关':'开';music.setMuted(muted);if(muted)sound.stop();else{sound.init();playMenuMusic();}});
+$('modeBtn').addEventListener('click',openModePanel);$('closeMode').addEventListener('click',closeModePanel);
+document.querySelectorAll('#modePanel .mode-option').forEach(button=>button.addEventListener('click',()=>{
+ const mode=button.dataset.mode;setControlMode(mode,{store:true});closeModePanel();
+ toast(mode==='auto'?'操作方式：自动 · '+(touchMode?'触屏':'键鼠'):mode==='touch'?'操作方式：触屏 · 推荐横屏':'操作方式：键鼠');
+}));
+UI.modePanel.addEventListener('pointerdown',event=>{if(event.target===UI.modePanel)closeModePanel();});
 $('assistBtn').addEventListener('click',openAssists);$('closeAssists').addEventListener('click',closeAssists);$('resetAssists').addEventListener('click',()=>fillAssistForm(Rescue.normalizeAssists()));
-$('assistForm').addEventListener('change',event=>{if(event.target.id==='assistSnap'&&$('assistSnap').checked)$('assistSnapForce').checked=false;else if(event.target.id==='assistSnapForce'&&$('assistSnapForce').checked)$('assistSnap').checked=false;previewAssists();});$('assistForm').addEventListener('submit',event=>{event.preventDefault();const mode=$('controlMode').value,wasTouch=touchMode;assistSettings=readAssistForm();let stored=true;try{localStorage.setItem(ASSIST_KEY,JSON.stringify(assistSettings));localStorage.setItem(CONTROL_KEY,JSON.stringify({mode}));}catch{stored=false;}setControlMode(mode);closeAssists();toast(stored?(touchMode!==wasTouch?(touchMode?'已切换触屏操作 · 推荐横屏':'已切换键鼠操作'):'设置已保存 · 下次新行动生效'):'设置本次有效 · 浏览器未允许持久保存');});
+$('assistForm').addEventListener('change',event=>{if(event.target.id==='assistSnap'&&$('assistSnap').checked)$('assistSnapForce').checked=false;else if(event.target.id==='assistSnapForce'&&$('assistSnapForce').checked)$('assistSnap').checked=false;previewAssists();});$('assistForm').addEventListener('submit',event=>{event.preventDefault();assistSettings=readAssistForm();let stored=true;try{localStorage.setItem(ASSIST_KEY,JSON.stringify(assistSettings));}catch{stored=false;}updateMenu();closeAssists();toast(stored?'设置已保存 · 下次新行动生效':'设置本次有效 · 浏览器未允许持久保存');});
 const coarseMedia=window.matchMedia?.('(pointer: coarse)');coarseMedia?.addEventListener?.('change',()=>{if(controlMode==='auto')setControlMode('auto',{announce:true});});
 UI.assistPanel.addEventListener('pointerdown',event=>{if(event.target===UI.assistPanel)closeAssists();});
 $('redFiller').addEventListener('click',()=>engine.selectFiller('red'));$('blueFiller').addEventListener('click',()=>engine.selectFiller('blue'));
 const canvas=$('scene');
 const controlTarget=target=>target instanceof Element&&!!target.closest('button,input,select,textarea,a,[contenteditable]:not([contenteditable="false"]),[role="dialog"]');
-const inputActive=()=>!engine.paused&&UI.pauseMap.hidden&&UI.menu.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden&&UI.assistPanel.hidden&&!UI.hud.hidden&&$('fatal').hidden&&!['menu','failed','won','tutorial-done'].includes(engine.state);
+const inputActive=()=>!engine.paused&&UI.pauseMap.hidden&&UI.menu.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden&&UI.modePanel.hidden&&UI.assistPanel.hidden&&!UI.hud.hidden&&$('fatal').hidden&&!['menu','failed','won','tutorial-done'].includes(engine.state);
 const gameplayInput=()=>viewActive&&inputActive()&&!controlTarget(document.activeElement);
 // Mouse look and the wheel stay live while a HUD button owns keyboard focus.
 const pointerInput=()=>viewActive&&inputActive()&&!touchMode;
@@ -499,6 +540,11 @@ document.addEventListener('pointerlockchange',()=>{
 document.addEventListener('focusin',event=>{if(controlTarget(event.target)){player.clearInput();engine.fast=false;mouseX=mouseY=null;}});
 window.addEventListener('keydown',event=>{
  if(event.ctrlKey||event.metaKey||event.altKey)return;
+ if(!UI.modePanel.hidden){
+  if(event.code==='Escape'){event.preventDefault();closeModePanel();}
+  if(event.code==='Tab')trapDialogFocus(UI.modePanel,event);
+  return;
+ }
  if(!UI.assistPanel.hidden){
   if(event.code==='Escape'){event.preventDefault();closeAssists();}
   if(event.code==='Tab'){const nodes=[...UI.assistPanel.querySelectorAll('button,input,select')].filter(n=>!n.disabled),first=nodes[0],last=nodes[nodes.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
@@ -523,7 +569,7 @@ window.addEventListener('keyup',event=>{player.setKey(event.code,false);if(event
 $('waitBtn').addEventListener('pointerdown',event=>{if(!inputActive())return;event.preventDefault();engine.fast=true;});window.addEventListener('pointerup',()=>{engine.fast=false;});
 window.addEventListener('blur',()=>{releaseView();if(!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden)togglePause(true);});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&!UI.hud.hidden&&UI.dialog.hidden&&UI.help.hidden&&UI.guide.hidden)togglePause(true);});
-window.addEventListener('resize',()=>{scene.resize();if(pauseMapView&&!UI.pauseMap.hidden)pauseMapView.resize();});window.addEventListener('beforeunload',()=>{persist();sound.stop();});
+window.addEventListener('resize',()=>{scene.resize();if(pauseMapView&&!UI.pauseMap.hidden)pauseMapView.resize();if(fireworks&&!UI.dialog.hidden)fireworks.resize();});window.addEventListener('beforeunload',()=>{persist();sound.stop();});
 for(let i=0;i<39;i++){const line=document.createElement('i');line.style.height='3px';$('signalMeter').appendChild(line);}
 const meterLines=[...$('signalMeter').children];
 function updateHUD(now){
@@ -540,8 +586,8 @@ function updateHUD(now){
  UI.bagIcon.classList.toggle('blue',blue);UI.bagName.textContent=bagLabel(blue?'blue':'red')+(wrong?' · 需换袋':'');UI.bagIcon.parentElement.classList.toggle('wrong-filler',wrong);
  $('redFiller').classList.toggle('selected',!blue);$('blueFiller').classList.toggle('selected',blue);$('redFiller').setAttribute('aria-pressed',String(!blue));$('blueFiller').setAttribute('aria-pressed',String(blue));$('redFiller').disabled=$('blueFiller').disabled=e.paused||!['wait','ready','forming','portal'].includes(s)||e.assists.autoSwitch;
  UI.sealInfo.textContent=silent?'此段不用填充物，开门后直接跳':e.sealBlocked?'仍在旧洞内 · 离开后才能封闭':finite(e.sealAt)&&e.sealAt>e.time?'旧洞封闭倒计时 '+sec(e.sealAt-e.time)+' s':finite(e.sealAt)?'旧洞已封闭':'落地 1 秒后封洞，跳后继续计时';
- const green=rec&&e.time>=rec.go&&e.time<rec.nextB;UI.targetDot.style.background=green?'var(--green)':'var(--red)';
- UI.targetTitle.textContent='推荐新洞 B';UI.targetDistance.textContent=rec?rec.distance.toFixed(1)+' m':'— m';UI.targetHint.textContent=rec?(silent?'0.0 s · 随时开洞':sec(rec.go-e.time)+' s'+(green?' · 可以开洞':' 后可开洞')):'没有连续安全窗口';UI.targetHint.style.color=green?'var(--green)':'';
+ const green=rec&&e.time>=rec.go&&e.time<rec.nextB,markOpen=!!(green&&e.assists?.autoMark!==false);UI.targetDot.style.background=markOpen?'var(--green)':'var(--red)';
+ UI.targetTitle.textContent='推荐新洞 B';UI.targetDistance.textContent=rec?rec.distance.toFixed(1)+' m':'— m';UI.targetHint.textContent=rec?(silent?'0.0 s · 随时开洞':sec(rec.go-e.time)+' s'+(green?' · 可以开洞':' 后可开洞')):'没有连续安全窗口';UI.targetHint.style.color=markOpen?'var(--green)':green?'var(--red)':'';
  UI.crosshair.classList.toggle('snapped',!!aim?.snapped);
  UI.aimInfo.textContent=aim?'实际 '+aim.distance.toFixed(1)+' m'+(!rec?' · 自由瞄准 / 暂无路线建议':e.assists.snapForce?' · 重吸附推荐':e.assists.snapAim?(aim.snapped?' · 已吸附推荐':' · 靠近推荐可吸附'):aim.deviation>1?' · 偏离推荐 '+aim.deviation.toFixed(1)+' m':' · 对准推荐'):e.aim.point?'实际 '+e.aim.distance.toFixed(1)+' m · 此落点无安全窗':'无连续安全落点';
  const aimGreen=aim&&e.time>=aim.go&&e.time<aim.nextB;
@@ -551,7 +597,7 @@ function updateHUD(now){
  const ownEta=waveEta(e.pos),aimEta=aim?waveEta(aim.point):Infinity,recEta=rec?waveEta(rec.point):Infinity;
  UI.ownWave.textContent=finite(ownEta)?sec(ownEta):'—';UI.aimWave.textContent=finite(aimEta)?sec(aimEta):'—';UI.recWave.textContent=finite(recEta)?sec(recEta):'—';UI.ownWaveUnit.style.visibility=finite(ownEta)?'visible':'hidden';UI.aimWaveUnit.style.visibility=finite(aimEta)?'visible':'hidden';UI.recWaveUnit.style.visibility=finite(recEta)?'visible':'hidden';
  UI.ownWaveRow.classList.toggle('soon',finite(ownEta)&&ownEta<1.5);UI.aimWaveRow.classList.toggle('soon',finite(aimEta)&&aimEta<1.5);UI.recWaveRow.classList.toggle('soon',finite(recEta)&&recEta<1.5);
- UI.aimWaveRow.classList.toggle('safe',!!aimGreen);UI.recWaveRow.classList.toggle('safe',!!green);
+ UI.aimWaveRow.classList.toggle('safe',!!aimGreen);UI.recWaveRow.classList.toggle('safe',!!markOpen);
  UI.signalText.textContent=s==='low'?'门低了 · 立即补洞':e.noPlan?'未找到连续安全落点':training?'安全教学 · 没有探测':silent?'没有扫描':restarting?'五钟重启中 · '+fiveOnline+'/'+fiveTotal:transmitting?'波前传导中 · 约 '+sec(firstIn)+' s':aimGreen?'安全窗口已打开':'等待安全开洞时机';UI.signalDot.style.background=danger?'var(--red)':startup?'var(--hud-amber)':aimGreen?'var(--green)':'var(--hud-sym-faint)';
  commsEdge('filler',!training&&wrong,'岩层换了，按 1 / 2 换对应的袋子。');
  commsEdge('noPlan',!training&&!silent&&e.noPlan,e.noPlanReason==='deadline'?'最近的波贴上来了，先退开，别开洞。':'前面没有安全落点，先等一个窗口。');
@@ -590,10 +636,11 @@ function updateHUD(now){
   UI.aimTag.style.left=left+'px';
   UI.aimTag.style.top=top+'px';
   UI.aimTag.dataset.state=aimGreen?'open':'wait';
-  UI.aimTag.textContent='Ø1.0 m · '+aim.distance.toFixed(1)+' m';
+  UI.aimTag.textContent='Ø'+(RescuePlayer.PHYSICS.portalRadius*2).toFixed(1)+' m · '+aim.distance.toFixed(1)+' m';
  }else UI.aimTag.hidden=true;
  // 500 m is physical remaining distance, independent of route-shortening assists.
  const goalNear=e.remaining<=500;
+ UI.goalDistance.textContent=goalDistanceLabel(e.remaining);
  UI.goalLabel.hidden=e.state==='menu'||UI.hud.hidden||!marks?.goal?.visible;
  UI.goalLabel.classList.toggle('near',goalNear);
  UI.goalLabel.style.setProperty('--goal-caption-opacity',Math.max(0,Math.min(1,(500-e.remaining)/80)).toFixed(3));
@@ -635,10 +682,12 @@ function frame(now){
  try{advance(dt);scene.update(engine,dt,{menu:engine.state==='menu'});music.update(dt,engine.paused);if(!UI.hud.hidden){updateHUD(now);commsTick(now);}if(now>toastUntil)UI.toast.classList.remove('show');}catch(error){errors.push(error.message);console.error(error);engine.paused=true;releaseView();$('fatal').hidden=false;$('fatalDetail').textContent=error.message;return;}
  requestAnimationFrame(frame);
 }
-window.__rescue={get engine(){return engine;},get scene(){return scene;},get player(){return player;},get sound(){return sound;},get arrivalLandingPending(){return arrivalLandingPending;},get touch(){return touchControls;},get pauseMapView(){return pauseMapView;},get controlMode(){return controlMode;},get touchMode(){return touchMode;},setControlMode(mode,options){return setControlMode(mode,options);},advance,get errors(){return errors;},get frames(){return frameCount;},get assistSettings(){return {...assistSettings};},start,retry,toMenu,pause:togglePause,openPauseMap,closePauseMap,openGuide,closeGuide,
+window.__rescue={get engine(){return engine;},get scene(){return scene;},get player(){return player;},get sound(){return sound;},get arrivalLandingPending(){return arrivalLandingPending;},get touch(){return touchControls;},get pauseMapView(){return pauseMapView;},get fireworks(){return fireworks;},get controlMode(){return controlMode;},get touchMode(){return touchMode;},setControlMode(mode,options){return setControlMode(mode,options);},advance,get errors(){return errors;},get frames(){return frameCount;},get assistSettings(){return {...assistSettings};},start,retry,toMenu,pause:togglePause,openPauseMap,closePauseMap,openGuide,closeGuide,
 get guide(){return {visible:!!UI.guide&&!UI.guide.hidden,scrollTop:UI.guideScroll?.scrollTop??0,scrollHeight:UI.guideScroll?.scrollHeight??0,clientHeight:UI.guideScroll?.clientHeight??0,active:document.activeElement?.id||'',sheet:UI.guide?.querySelector('.guide-sheet')?.getBoundingClientRect()||null,startHidden:$('startBtn').hidden,menuHidden:UI.menu.hidden};},
 get pauseMapSnapshot(){return engine.pauseSnapshot({radius:80});},
+get fireworksState(){return fireworks?{active:fireworks.active,mode:fireworks.mode,elapsed:fireworks.elapsed,frames:fireworks.frames,w:fireworks.w,h:fireworks.h,dpr:fireworks.dpr,canvas:{width:fireworks.canvas.width,height:fireworks.canvas.height}}:null;},
 get pauseMapState(){return {visible:!!UI.pauseMap&&!UI.pauseMap.hidden,shown:!!UI.pauseMap&&UI.pauseMap.classList.contains('is-visible'),scatter:!!UI.pauseMap&&UI.pauseMap.classList.contains('scatter-mode'),range:pauseMapView?.range||'local',rangeHidden:UI.pauseMapRange?.hidden??true,rangeLocal:UI.pauseMapLocal?.getAttribute('aria-pressed'),rangeFull:UI.pauseMapFull?.getAttribute('aria-pressed'),rangeScale:UI.pauseMapRangeScale?.textContent||'',paused:engine.paused,scenePaused:!!scene.pauseActive,blend:scene.pauseBlend,fov:scene.camera?.fov,clock:UI.pauseMapClock?.textContent,stage:UI.pauseMapStage?.textContent,meta:UI.pauseMapMeta?.textContent,map:pauseMapView?.lastStats||null,canvas:UI.pauseMapCanvas?{width:UI.pauseMapCanvas.width,height:UI.pauseMapCanvas.height}:null};},
-setMuted(value){muted=!!value;music.setMuted(muted);if(muted)sound.stop();},disableVoice(){sound.stop();},get music(){return {current:music.current,stopped:music.stopped,muted:music.muted,ducked:music.ducked,transition:music.transition?{...music.transition}:null,stopping:[...music.fadeOuts.keys()],levels:Object.fromEntries(music.levels),ctx:sound.ctx?.state||null,routed:[...music.routes.keys()],tracks:Object.fromEntries([...music.tracks].map(([key,clip])=>{const source=clip.currentSrc||clip.src||'',route=music.routes.get(key);return [key,{paused:clip.paused,time:clip.currentTime,duration:clip.duration,volume:clip.volume,loop:clip.loop,gain:route?route.gain.gain.value:null,src:source.startsWith('data:')?'data:audio/mpeg;base64,':decodeURIComponent(source.split('/').pop()||'')}];}))};},say(text,options){commsSay(text,options);},clearComms(){commsClear();},get comms(){return {active:comms.active?{...comms.active}:null,queue:comms.queue.map(item=>({...item})),visible:!UI.comms.hidden&&UI.comms.classList.contains('is-on'),text:UI.commsText.textContent,edges:[...commsEdges.entries()]};},stats(){return {state:engine.state,stage:engine.stage,jumps:engine.jumps,remaining:engine.remaining,assists:engine.assists,lives:engine.lives,scanHits:engine.scanHits,fillerType:engine.fillerType,rules:engine.rules,player:{position:player.position.slice(),eye:player.eye,yaw:player.yaw,pitch:player.pitch,grounded:player.grounded,portal:player.portal},goIn:engine.goIn,escape:engine.escape,rec:engine.rec,aim:{...engine.aim},frames:frameCount,render:scene.stats(),errors:errors.slice()};}};
+setMuted(value){muted=!!value;music.setMuted(muted);if(muted)sound.stop();else{sound.init();playMenuMusic();}},disableVoice(){sound.stop();},get music(){return {current:music.current,stopped:music.stopped,muted:music.muted,ducked:music.ducked,transition:music.transition?{...music.transition}:null,stopping:[...music.fadeOuts.keys()],levels:Object.fromEntries(music.levels),ctx:sound.ctx?.state||null,routed:[...music.routes.keys()],tracks:Object.fromEntries([...music.tracks].map(([key,clip])=>{const source=clip.currentSrc||clip.src||'',route=music.routes.get(key);return [key,{paused:clip.paused,time:clip.currentTime,duration:clip.duration,volume:clip.volume,loop:clip.loop,gain:route?route.gain.gain.value:null,src:source.startsWith('data:')?'data:audio/mpeg;base64,':decodeURIComponent(source.split('/').pop()||'')}];}))};},say(text,options){commsSay(text,options);},clearComms(){commsClear();},get comms(){return {active:comms.active?{...comms.active}:null,queue:comms.queue.map(item=>({...item})),visible:!UI.comms.hidden&&UI.comms.classList.contains('is-on'),text:UI.commsText.textContent,edges:[...commsEdges.entries()]};},stats(){return {state:engine.state,stage:engine.stage,jumps:engine.jumps,remaining:engine.remaining,assists:engine.assists,lives:engine.lives,scanHits:engine.scanHits,fillerType:engine.fillerType,rules:engine.rules,player:{position:player.position.slice(),eye:player.eye,yaw:player.yaw,pitch:player.pitch,grounded:player.grounded,portal:player.portal},goIn:engine.goIn,escape:engine.escape,rec:engine.rec,aim:{...engine.aim},frames:frameCount,render:scene.stats(),errors:errors.slice()};}};
+armMenuMusic();
 requestAnimationFrame(frame);
 })();

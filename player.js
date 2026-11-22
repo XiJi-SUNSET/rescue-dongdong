@@ -9,7 +9,7 @@
   const EYE = 1.65;
   const BODY_RADIUS = 0.22;
   const HEAD = EYE + 0.2;
-  const PORTAL_RADIUS = 0.55;
+  const PORTAL_RADIUS = 0.6;
   const EXIT_CEILING_CLEARANCE = 0.12;
   const EXIT_HEIGHT = R + Math.sqrt(R * R - PORTAL_RADIUS * PORTAL_RADIUS) - EXIT_CEILING_CLEARANCE;
   const EXIT_HEAD_CLEARANCE = 0.08;
@@ -27,7 +27,7 @@
     maxStep: 1 / 120,
     portalRadius: PORTAL_RADIUS,
     portalDistance: 0.75,
-    portalLift: 0.12,
+    portalLift: 0.09,
     portalCenterRadius: 0.3,
     exitCeilingClearance: EXIT_CEILING_CLEARANCE,
     exitHeight: EXIT_HEIGHT,
