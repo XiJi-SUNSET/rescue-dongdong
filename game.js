@@ -5,9 +5,12 @@ const $=id=>document.getElementById(id), UI={};
 const ASSIST_KEY='rescue-dongdong-assists-v1',CONTROL_KEY='rescue-dongdong-controls-v1';
 let assistSettings=Rescue.normalizeAssists();try{assistSettings=Rescue.normalizeAssists(JSON.parse(localStorage.getItem(ASSIST_KEY)));}catch{}
 let controlMode='auto';try{const stored=JSON.parse(localStorage.getItem(CONTROL_KEY));if(stored&&['auto','keyboard','touch'].includes(stored.mode))controlMode=stored.mode;}catch{}
+const toyPreview=()=>{try{return /^\/toy\/preview\//.test(location.pathname)||/[?&]preview=1(?:&|$)/.test(location.search);}catch{return false;}};
+const toySdk=()=>typeof window.toy==='object'&&window.toy?window.toy:null;
+const previewPhone=()=>toyPreview()&&innerWidth<=640&&innerHeight>innerWidth;
 const coarsePointer=()=>window.matchMedia?.('(pointer: coarse)').matches||(navigator.maxTouchPoints>0&&window.matchMedia?.('(hover: none)').matches);
-const resolveControlMode=()=>controlMode==='touch'||(controlMode==='auto'&&coarsePointer());
-let touchMode=resolveControlMode(),touchControls=null;
+const resolveControlMode=()=>controlMode==='touch'||(controlMode==='auto'&&(coarsePointer()||previewPhone()));
+let touchMode=resolveControlMode(),touchControls=null,toyContainerReady=false;
 document.body.classList.toggle('touch-mode',touchMode);
 const SAVE_KEY='rescue-dongdong-save-v2';let scene,engine,player,pauseMapView=null,pauseMapTimer=0,lastFrame=0,dialogAction=null,dialogAlt=null,helpWasPaused=false,toastUntil=0,frameCount=0,muted=false,pauseMapRange='local',pauseMapContext=null,fireworks=null;
 const errors=[];window.addEventListener('error',e=>errors.push(e.message));window.addEventListener('unhandledrejection',e=>errors.push(String(e.reason)));
@@ -31,8 +34,9 @@ function updateMenu(){
  $('assistStatus').textContent=names.length?names.length+' 项辅助':'未启用';$('assistStatus').classList.toggle('enabled',!!names.length);
  const modeLabel=controlMode==='auto'?'自动 · '+(touchMode?'触屏':'键鼠'):controlMode==='touch'?'触屏':'键鼠';
  $('modeStatus').textContent=modeLabel;
- const modeNote=touchMode?'触屏操作 · 左手摇杆 / 右手转向':'鼠标与键盘 · 离线游玩';
- $('menuAssistNote').textContent=names.length?'老君的法宝（加强版） · '+names.join(' / ')+'\n'+modeNote+'\n新行动生效，继续存档沿用原设置。':'正常难度 · 所有辅助关闭\n'+modeNote;
+ const modeNote=touchMode?'触屏操作 · 推荐横屏 · 左手摇杆 / 右手转向':'鼠标与键盘 · 离线游玩';
+ const previewNote=toyPreview()&&!toySdk()?'\n网页预览不会转屏 · App 内打开会自动横屏':'';
+ $('menuAssistNote').textContent=(names.length?'老君的法宝（加强版） · '+names.join(' / ')+'\n'+modeNote+'\n新行动生效，继续存档沿用原设置。':'正常难度 · 所有辅助关闭\n'+modeNote)+previewNote;
  $('startBtn').innerHTML=(saved?'开始新行动':'开始游戏')+' <span>→</span>';
 }
 function readAssistForm(){return Rescue.normalizeAssists({distanceScale:Number($('assistDistance').value),maxLives:Number($('assistLives').value),snapAim:$('assistSnap').checked,snapForce:$('assistSnapForce').checked,autoFill:$('assistFill').checked,autoSwitch:$('assistSwitch').checked,autoJump:$('assistJump').checked,autoMark:$('assistMark').checked});}
@@ -682,12 +686,83 @@ function frame(now){
  try{advance(dt);scene.update(engine,dt,{menu:engine.state==='menu'});music.update(dt,engine.paused);if(!UI.hud.hidden){updateHUD(now);commsTick(now);}if(now>toastUntil)UI.toast.classList.remove('show');}catch(error){errors.push(error.message);console.error(error);engine.paused=true;releaseView();$('fatal').hidden=false;$('fatalDetail').textContent=error.message;return;}
  requestAnimationFrame(frame);
 }
-window.__rescue={get engine(){return engine;},get scene(){return scene;},get player(){return player;},get sound(){return sound;},get arrivalLandingPending(){return arrivalLandingPending;},get touch(){return touchControls;},get pauseMapView(){return pauseMapView;},get fireworks(){return fireworks;},get controlMode(){return controlMode;},get touchMode(){return touchMode;},setControlMode(mode,options){return setControlMode(mode,options);},advance,get errors(){return errors;},get frames(){return frameCount;},get assistSettings(){return {...assistSettings};},start,retry,toMenu,pause:togglePause,openPauseMap,closePauseMap,openGuide,closeGuide,
+window.__rescue={get engine(){return engine;},get scene(){return scene;},get player(){return player;},get sound(){return sound;},get arrivalLandingPending(){return arrivalLandingPending;},get touch(){return touchControls;},get pauseMapView(){return pauseMapView;},get fireworks(){return fireworks;},get controlMode(){return controlMode;},get touchMode(){return touchMode;},get toyContainer(){return {ready:toyContainerReady,state:toyContainerState};},requestLandscape,setControlMode(mode,options){return setControlMode(mode,options);},advance,get errors(){return errors;},get frames(){return frameCount;},get assistSettings(){return {...assistSettings};},start,retry,toMenu,pause:togglePause,openPauseMap,closePauseMap,openGuide,closeGuide,
 get guide(){return {visible:!!UI.guide&&!UI.guide.hidden,scrollTop:UI.guideScroll?.scrollTop??0,scrollHeight:UI.guideScroll?.scrollHeight??0,clientHeight:UI.guideScroll?.clientHeight??0,active:document.activeElement?.id||'',sheet:UI.guide?.querySelector('.guide-sheet')?.getBoundingClientRect()||null,startHidden:$('startBtn').hidden,menuHidden:UI.menu.hidden};},
 get pauseMapSnapshot(){return engine.pauseSnapshot({radius:80});},
 get fireworksState(){return fireworks?{active:fireworks.active,mode:fireworks.mode,elapsed:fireworks.elapsed,frames:fireworks.frames,w:fireworks.w,h:fireworks.h,dpr:fireworks.dpr,canvas:{width:fireworks.canvas.width,height:fireworks.canvas.height}}:null;},
 get pauseMapState(){return {visible:!!UI.pauseMap&&!UI.pauseMap.hidden,shown:!!UI.pauseMap&&UI.pauseMap.classList.contains('is-visible'),scatter:!!UI.pauseMap&&UI.pauseMap.classList.contains('scatter-mode'),range:pauseMapView?.range||'local',rangeHidden:UI.pauseMapRange?.hidden??true,rangeLocal:UI.pauseMapLocal?.getAttribute('aria-pressed'),rangeFull:UI.pauseMapFull?.getAttribute('aria-pressed'),rangeScale:UI.pauseMapRangeScale?.textContent||'',paused:engine.paused,scenePaused:!!scene.pauseActive,blend:scene.pauseBlend,fov:scene.camera?.fov,clock:UI.pauseMapClock?.textContent,stage:UI.pauseMapStage?.textContent,meta:UI.pauseMapMeta?.textContent,map:pauseMapView?.lastStats||null,canvas:UI.pauseMapCanvas?{width:UI.pauseMapCanvas.width,height:UI.pauseMapCanvas.height}:null};},
 setMuted(value){muted=!!value;music.setMuted(muted);if(muted)sound.stop();else{sound.init();playMenuMusic();}},disableVoice(){sound.stop();},get music(){return {current:music.current,stopped:music.stopped,muted:music.muted,ducked:music.ducked,transition:music.transition?{...music.transition}:null,stopping:[...music.fadeOuts.keys()],levels:Object.fromEntries(music.levels),ctx:sound.ctx?.state||null,routed:[...music.routes.keys()],tracks:Object.fromEntries([...music.tracks].map(([key,clip])=>{const source=clip.currentSrc||clip.src||'',route=music.routes.get(key);return [key,{paused:clip.paused,time:clip.currentTime,duration:clip.duration,volume:clip.volume,loop:clip.loop,gain:route?route.gain.gain.value:null,src:source.startsWith('data:')?'data:audio/mpeg;base64,':decodeURIComponent(source.split('/').pop()||'')}];}))};},say(text,options){commsSay(text,options);},clearComms(){commsClear();},get comms(){return {active:comms.active?{...comms.active}:null,queue:comms.queue.map(item=>({...item})),visible:!UI.comms.hidden&&UI.comms.classList.contains('is-on'),text:UI.commsText.textContent,edges:[...commsEdges.entries()]};},stats(){return {state:engine.state,stage:engine.stage,jumps:engine.jumps,remaining:engine.remaining,assists:engine.assists,lives:engine.lives,scanHits:engine.scanHits,fillerType:engine.fillerType,rules:engine.rules,player:{position:player.position.slice(),eye:player.eye,yaw:player.yaw,pitch:player.pitch,grounded:player.grounded,portal:player.portal},goIn:engine.goIn,escape:engine.escape,rec:engine.rec,aim:{...engine.aim},frames:frameCount,render:scene.stats(),errors:errors.slice()};}};
 armMenuMusic();
+/* ---- Toy 容器：B站 App 内的横屏请求与安全区 ---------------------------------
+   Toy JS SDK 只在 B站 App 内存在。站外 / 桌面预览没有 window.toy，
+   这里全部静默降级：保留竖屏布局，给一个「横屏」按钮让玩家自己转。
+   注意：setContainerMode 的 resolve 不代表切成了；以 onContainerChange /
+   getContainerState 的实际状态为准；方向和沉浸一次传齐。 */
+const portraitQuery=window.matchMedia?.('(orientation: portrait)');
+let toyContainerState=null,toyContainerUnsub=null,rotateHintTimer=0,toyInitAttempt=0,toyInitTimer=0,toyInitBusy=false;
+function applyToySafeArea(area){
+ if(!area||typeof area!=='object')return;
+ const px=value=>Math.max(0,Number(value)||0)+'px';
+ const style=document.documentElement.style;
+ style.setProperty('--sa-top',px(area.top));
+ style.setProperty('--sa-right',px(area.right));
+ style.setProperty('--sa-bottom',px(area.bottom));
+ style.setProperty('--sa-left',px(area.left));
+}
+function absorbToyState(state){
+ if(!state||typeof state!=='object')return;
+ toyContainerState=state;
+ applyToySafeArea(state.safeArea);
+}
+async function initToyContainer(){
+ if(toyContainerReady||toyInitBusy)return toyContainerReady;
+ const toy=toySdk();
+ if(!toy||typeof toy.isSupport!=='function'){
+  // App 有时在页面脚本之后才注入 window.toy；轮询几秒，别把横屏请求漏掉。
+  if(toyInitAttempt<20){
+   toyInitAttempt++;
+   clearTimeout(toyInitTimer);
+   toyInitTimer=setTimeout(()=>{toyInitTimer=0;initToyContainer();},400);
+  }
+  return false;
+ }
+ toyInitBusy=true;
+ try{
+  const supported=await Promise.all(['onContainerChange','getContainerState','setContainerMode'].map(name=>toy.isSupport(name)));
+  if(!supported.every(Boolean))return false;
+  const unsub=toy.onContainerChange(absorbToyState);
+  if(typeof unsub==='function')toyContainerUnsub=unsub;
+  absorbToyState(await toy.getContainerState());
+  toyContainerReady=true;
+  toyInitAttempt=0;
+  updateMenu();
+  if(touchMode&&portraitQuery?.matches)requestLandscape({quiet:true});
+  return true;
+ }catch(_){toyContainerReady=false;return false;}
+ finally{toyInitBusy=false;}
+}
+function requestLandscape({quiet=false}={}){
+ if(!portraitQuery?.matches)return false;
+ const toy=toySdk();
+ if(!toy||!toyContainerReady||typeof toy.setContainerMode!=='function'){
+  if(!quiet)toast(toyPreview()?'网页预览不会转屏 · App 内打开会自动横屏':'请把手机横过来 · 横屏视野更宽');
+  return false;
+ }
+ const fail=()=>{if(!quiet)toast('当前环境不能自动转屏 · 请把手机横过来');};
+ try{
+  Promise.resolve(toy.setContainerMode({orientation:'landscape',immersive:true})).catch(fail);
+ }catch(_){fail();return false;}
+ if(!quiet){
+  clearTimeout(rotateHintTimer);
+  rotateHintTimer=setTimeout(()=>{
+   if(portraitQuery?.matches)toast('画面没转过来？请把手机横过来');
+  },1200);
+ }
+ return true;
+}
+$('rotateBtn')?.addEventListener('click',()=>requestLandscape());
+for(const id of ['startBtn','continueBtn','fiveBtn'])$(id)?.addEventListener('click',()=>{if(touchMode){if(toyContainerReady)requestLandscape({quiet:true});else initToyContainer();}});
+addEventListener('resize',()=>{if(controlMode==='auto')setControlMode('auto');});
+initToyContainer();
 requestAnimationFrame(frame);
 })();

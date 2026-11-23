@@ -820,7 +820,7 @@ body.touch-mode .guide-hint-touch{display:inline}
 .guide-actions .primary:hover{background:#e0cbaa;filter:none;transform:translate(1px,-1px)}
 .guide-actions .secondary{background:transparent;border:2px solid var(--p-line);box-shadow:2px 3px 0 rgba(8,7,5,.4);color:var(--p-ink);font-weight:700}
 .guide-actions .secondary:hover{background:rgba(23,19,14,.06);filter:none;transform:translate(1px,-1px)}
-@supports(padding:max(0px)){.guide-actions{padding-bottom:max(15px,env(safe-area-inset-bottom))}}
+@supports(padding:max(0px)){.guide-actions{padding-bottom:max(15px,var(--sa-bottom))}}
 
 @media(max-width:1100px){
   .guide-overlay{padding:16px}
@@ -858,7 +858,7 @@ body.touch-mode .guide-hint-touch{display:inline}
   .guide-section-head{margin-bottom:11px}
   .guide-section-head h3{font-size:19px}
   .guide-quick{padding:8px 11px}
-  .guide-actions{padding:9px 26px;padding-bottom:max(9px,env(safe-area-inset-bottom))}
+  .guide-actions{padding:9px 26px;padding-bottom:max(9px,var(--sa-bottom))}
   .guide-actions button{padding:8px 12px}
   .guide-figure figcaption{font-size:8px}
 }
@@ -896,7 +896,7 @@ body.touch-mode .guide-hint-touch{display:inline}
   .guide-stages article{grid-template-columns:24px minmax(0,1fr);gap:3px 7px}
   .guide-stages h4{font-size:10.5px}
   .guide-stages p{grid-column:2}
-  .guide-actions{flex-direction:column-reverse;align-items:stretch;gap:8px;padding:10px 18px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  .guide-actions{flex-direction:column-reverse;align-items:stretch;gap:8px;padding:10px 18px;padding-bottom:max(10px,var(--sa-bottom))}
   .guide-actions>span{text-align:center;font-size:8px}
   .guide-actions>div{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .guide-actions button{width:100%;justify-content:center;padding:10px 8px;font-size:9.5px;text-align:center}
@@ -1179,4 +1179,11 @@ body:not(.playing) .toast.show{transform:translateX(-50%)}
   .menu .menu-extra>button:hover,.dialog .primary:hover,.help-card .primary:hover,
   .assist-actions .primary:hover,.guide-actions .primary:hover,.dialog .secondary:hover,
   .guide-actions .secondary:hover,.assist-close:hover,.guide-close:hover{transform:none}
+}
+/* B站 App 的 WebView 不一定把安全区写进 CSS env；Toy SDK 报回来的值优先。 */
+:root{
+  --sa-top:env(safe-area-inset-top,0px);
+  --sa-right:env(safe-area-inset-right,0px);
+  --sa-bottom:env(safe-area-inset-bottom,0px);
+  --sa-left:env(safe-area-inset-left,0px);
 }

@@ -14,6 +14,9 @@ body.touch-mode #game{min-height:0}
 body.touch-mode #scene,body.touch-mode .touch-layer{touch-action:none}
 body.touch-mode.view-active #scene{cursor:default}
 body.touch-mode #lockBtn{display:none!important}
+/* 转屏按钮只在触屏竖屏出现；横屏后它没有意义。 */
+body:not(.touch-mode) #rotateBtn{display:none!important}
+@media (orientation:landscape){body.touch-mode #rotateBtn{display:none!important}}
 body.touch-mode:not(.playing) .wordmark{display:none}
 body.touch-mode .wait-button{display:none!important}
 body.touch-mode .icon-button kbd{display:none!important}
@@ -30,7 +33,7 @@ body.touch-mode.playing .touch-layer:not([hidden]){display:block}
 .touch-layer.idle .touch-look{pointer-events:none}
 
 .touch-status{
-  position:absolute;left:50%;top:calc(56px + env(safe-area-inset-top));transform:translateX(-50%);
+  position:absolute;left:50%;top:calc(56px + var(--sa-top));transform:translateX(-50%);
   z-index:3;display:flex;flex-direction:column;align-items:center;gap:2px;
   min-width:178px;max-width:min(320px,46vw);padding:6px 13px;
   background:var(--touch-fill);border:1px solid var(--touch-line);border-radius:3px;
@@ -49,8 +52,8 @@ body.touch-mode.playing .touch-layer:not([hidden]){display:block}
 .touch-layer.danger .touch-status strong{color:#ecc0b8}
 
 .touch-stick{
-  position:absolute;left:calc(16px + env(safe-area-inset-left));
-  bottom:calc(16px + env(safe-area-inset-bottom));z-index:3;
+  position:absolute;left:calc(16px + var(--sa-left));
+  bottom:calc(16px + var(--sa-bottom));z-index:3;
   width:128px;height:128px;border-radius:50%;pointer-events:auto;touch-action:none;
   display:flex;align-items:center;justify-content:center;
   background:radial-gradient(circle at 50% 44%,rgba(37,63,75,.5),rgba(11,27,37,.7) 72%);
@@ -74,8 +77,8 @@ body.touch-mode.playing .touch-layer:not([hidden]){display:block}
 .touch-layer.idle .touch-stick{opacity:.38;pointer-events:none}
 
 .touch-actions{
-  position:absolute;right:calc(14px + env(safe-area-inset-right));
-  bottom:calc(14px + env(safe-area-inset-bottom));z-index:3;
+  position:absolute;right:calc(14px + var(--sa-right));
+  bottom:calc(14px + var(--sa-bottom));z-index:3;
   display:grid;grid-template-columns:56px 84px;
   grid-template-rows:44px 52px 62px;gap:7px;
   pointer-events:auto;touch-action:none;
@@ -118,7 +121,7 @@ body.touch-mode.playing .touch-layer:not([hidden]){display:block}
 .touch-layer.idle .touch-actions{opacity:.38;pointer-events:none}
 
 .touch-dock{
-  position:absolute;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  position:absolute;left:50%;bottom:calc(14px + var(--sa-bottom));transform:translateX(-50%);
   z-index:3;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 8px;
   max-width:calc(100% - 330px);padding:7px 10px 6px;
   background:var(--touch-fill);border:1px solid var(--touch-line);border-radius:4px;
@@ -150,9 +153,9 @@ body.touch-mode .dialog .primary,body.touch-mode .dialog .secondary{min-height:4
 body.touch-mode .assist-card,body.touch-mode .help-card{max-height:calc(100dvh - 20px);overflow:auto}
 body.touch-mode .assist-overlay{padding:10px}
 body.touch-mode .help-card .primary{min-height:46px}
-body.touch-mode .pause-map-actions{bottom:calc(18px + env(safe-area-inset-bottom))}
+body.touch-mode .pause-map-actions{bottom:calc(18px + var(--sa-bottom))}
 body.touch-mode .pause-map-actions button{min-height:48px}
-body.touch-mode .pause-map-range{bottom:calc(18px + env(safe-area-inset-bottom) + 94px)}
+body.touch-mode .pause-map-range{bottom:calc(18px + var(--sa-bottom) + 94px)}
 body.touch-mode .pause-map-range button{height:34px;min-width:54px;font-size:11px}
 .pause-map-hint .hint-touch{display:none}
 body.touch-mode .pause-map-hint .hint-wheel{display:none}
@@ -160,10 +163,10 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
 
 @media (max-width:900px),(max-height:520px){
   body.touch-mode .topbar{
-    padding-top:calc(8px + env(safe-area-inset-top));
-    padding-right:calc(12px + env(safe-area-inset-right));
+    padding-top:calc(8px + var(--sa-top));
+    padding-right:calc(12px + var(--sa-right));
     padding-bottom:8px;
-    padding-left:calc(12px + env(safe-area-inset-left));
+    padding-left:calc(12px + var(--sa-left));
   }
   body.touch-mode .wordmark>span{display:none}
   body.touch-mode .wordmark img{width:52px;height:auto;max-height:38px}
@@ -176,12 +179,12 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .pause-map-head .rule,body.touch-mode .pause-map-head p{display:none}
   body.touch-mode .pause-map-legend{display:none}
   body.touch-mode .pause-map-hint{
-    display:block;bottom:calc(76px + env(safe-area-inset-bottom));
+    display:block;bottom:calc(76px + var(--sa-bottom));
     padding:3px 8px;font-size:9px;white-space:nowrap;
   }
   body.touch-mode .pause-map-actions{width:min(560px,calc(100% - 36px));gap:8px}
   body.touch-mode .pause-map-actions button{flex:1;min-width:0;padding:0 12px}
-  body.touch-mode .route-readout{left:calc(12px + env(safe-area-inset-left));top:calc(55px + env(safe-area-inset-top));width:136px}
+  body.touch-mode .route-readout{left:calc(12px + var(--sa-left));top:calc(55px + var(--sa-top));width:136px}
   body.touch-mode .route-readout::before{top:-7px;width:48px;height:13px;margin-left:-24px}
   body.touch-mode .route-readout .eyebrow{font-size:8px;letter-spacing:1px}
   body.touch-mode .distance{gap:5px;margin:4px 0}
@@ -191,12 +194,12 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .distance-caption .caption-label{display:none}
   body.touch-mode .route-track{margin:11px 0 6px}
   body.touch-mode .route-stations{font-size:8px}
-  body.touch-mode .environment-readout{right:calc(12px + env(safe-area-inset-right));top:calc(58px + env(safe-area-inset-top));gap:3px}
+  body.touch-mode .environment-readout{right:calc(12px + var(--sa-right));top:calc(58px + var(--sa-top));gap:3px}
   body.touch-mode .environment-readout strong{font-size:11px;letter-spacing:1px}
   body.touch-mode .environment-readout>span:not(.tiny){font-size:8px}
   body.touch-mode .environment-readout .tiny{font-size:8px}
   body.touch-mode .comms{
-    top:calc(134px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));
+    top:calc(134px + var(--sa-top));right:calc(12px + var(--sa-right));
     width:min(320px,62vw);padding:8px 11px 9px 8px;gap:9px
   }
   body.touch-mode .comms-avatar{width:42px;height:47px}
@@ -204,7 +207,7 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .comms-head strong{font-size:10.5px;letter-spacing:1.8px}
   body.touch-mode .comms-head span{font-size:8px;letter-spacing:1px}
   body.touch-mode .comms-text{font-size:11.5px;line-height:1.6}
-  body.touch-mode .signal-panel,body.touch-mode .equipment-panel,body.touch-mode .wave-hud{display:none!important}
+  body.touch-mode .signal-panel,body.touch-mode .equipment-panel{display:none!important}
   body.touch-mode .assist-hud{margin-top:9px;padding-top:6px;font-size:8px;gap:4px}
   body.touch-mode .assist-hud small{display:none}
   body.touch-mode .world-label{min-width:128px}
@@ -216,7 +219,7 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .toast{top:21%;max-width:82vw;font-size:10px;text-align:center}
   body.touch-mode .menu-copy{
     position:relative;left:auto;top:auto;width:auto;max-width:none;max-height:none;
-    margin:0 18px;padding:calc(62px + env(safe-area-inset-top)) 0 calc(44px + env(safe-area-inset-bottom));
+    margin:0 18px;padding:calc(62px + var(--sa-top)) 0 calc(44px + var(--sa-bottom));
   }
   body.touch-mode .menu{background:linear-gradient(90deg,#102631f2,#102631d6 52%,#10263188)}
   body.touch-mode .menu h1{font-size:42px;letter-spacing:6px}
@@ -236,14 +239,14 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .menu-note{margin-top:10px;font-size:8px;line-height:1.7}
   body.touch-mode .menu-footer{
     position:relative;left:auto;right:auto;bottom:auto;margin:20px 18px 0;
-    padding:0 0 calc(18px + env(safe-area-inset-bottom));font-size:9px;gap:10px;
+    padding:0 0 calc(18px + var(--sa-bottom));font-size:9px;gap:10px;
   }
   body.touch-mode .menu-footer span:last-child{display:none}
 }
 @media (max-height:520px){
   body.touch-mode .menu-copy{
     width:min(100% - 36px,360px);max-width:360px;
-    padding-top:calc(64px + env(safe-area-inset-top));
+    padding-top:calc(64px + var(--sa-top));
   }
   body.touch-mode .menu .eyebrow{display:none}
   body.touch-mode .mission-logo{width:auto;height:auto;max-height:64px;margin:0}
@@ -254,14 +257,14 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
 }
 @media (orientation:portrait){
   body.touch-mode .comms{
-    top:calc(166px + env(safe-area-inset-top));width:min(320px,80vw);
+    top:calc(166px + var(--sa-top));width:min(320px,80vw);
   }
   body.touch-mode .touch-dock{
-    width:max-content;bottom:calc(200px + env(safe-area-inset-bottom));max-width:calc(100% - 24px);
+    width:max-content;bottom:calc(200px + var(--sa-bottom));max-width:calc(100% - 24px);
     padding:7px 12px 6px;
   }
   body.touch-mode .touch-status{
-    top:auto;bottom:calc(278px + env(safe-area-inset-bottom));max-width:calc(100% - 24px);
+    top:auto;bottom:calc(278px + var(--sa-bottom));max-width:calc(100% - 24px);
   }
 }
 @media (max-width:900px) and (orientation:portrait){
@@ -280,22 +283,22 @@ body.touch-mode .pause-map-hint .hint-touch{display:inline}
   body.touch-mode .dialog .secondary{margin-top:6px;padding:9px 14px;min-height:40px}
 }
 @media (max-height:380px){
-  body.touch-mode .topbar{padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:4px}
+  body.touch-mode .topbar{padding-top:calc(4px + var(--sa-top));padding-bottom:4px}
   body.touch-mode .icon-button{padding:6px;font-size:10px;min-height:34px}
   body.touch-mode .wordmark img{width:42px;max-height:30px}
-  body.touch-mode .route-readout{top:calc(40px + env(safe-area-inset-top))}
-  body.touch-mode .environment-readout{top:calc(42px + env(safe-area-inset-top))}
-  body.touch-mode .comms{top:calc(98px + env(safe-area-inset-top));width:min(270px,44vw);padding:6px 9px 7px 6px;gap:6px}
+  body.touch-mode .route-readout{top:calc(40px + var(--sa-top))}
+  body.touch-mode .environment-readout{top:calc(42px + var(--sa-top))}
+  body.touch-mode .comms{top:calc(98px + var(--sa-top));width:min(270px,44vw);padding:6px 9px 7px 6px;gap:6px}
   body.touch-mode .comms-avatar{width:30px;height:34px}
   body.touch-mode .comms-head strong{font-size:9.5px}
   body.touch-mode .comms-head span{font-size:7.5px}
   body.touch-mode .comms-text{font-size:9px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  body.touch-mode .touch-status{top:calc(40px + env(safe-area-inset-top));padding:4px 10px}
+  body.touch-mode .touch-status{top:calc(40px + var(--sa-top));padding:4px 10px}
   body.touch-mode .touch-status span{display:none}
   body.touch-mode .touch-stick{width:108px;height:108px}
   body.touch-mode .touch-stick i{width:44px;height:44px}
   body.touch-mode .touch-actions{grid-template-rows:40px 46px 54px}
-  body.touch-mode .touch-dock{padding:5px 8px 4px;bottom:calc(8px + env(safe-area-inset-bottom))}
+  body.touch-mode .touch-dock{padding:5px 8px 4px;bottom:calc(8px + var(--sa-bottom))}
   body.touch-mode .touch-bags button,body.touch-mode .touch-distance button{height:30px}
   body.touch-mode .touch-distance b{line-height:30px}
   body.touch-mode .touch-filler{display:none}
@@ -480,8 +483,8 @@ body.touch-mode .toast{
    The dossier chrome shrinks into three corner notes and one bottom dock so the
    radar keeps the centre of a phone screen. No extra panel may cover the map. */
 body.touch-mode .pause-map-head{
-  left:calc(10px + env(safe-area-inset-left));
-  top:calc(8px + env(safe-area-inset-top));
+  left:calc(10px + var(--sa-left));
+  top:calc(8px + var(--sa-top));
   width:auto;max-width:min(208px,46vw);
   padding:9px 11px 10px;border-width:2.5px;border-radius:14px;
   box-shadow:3px 4px 0 var(--c-shadow),0 12px 28px rgba(0,0,0,.32);
@@ -499,8 +502,8 @@ body.touch-mode .pause-map-head p{display:none}
 
 body.touch-mode .pause-map-frozen{
   display:flex;align-items:baseline;gap:7px;
-  right:calc(10px + env(safe-area-inset-right));
-  top:calc(8px + env(safe-area-inset-top));
+  right:calc(10px + var(--sa-right));
+  top:calc(8px + var(--sa-top));
   padding:6px 9px;border-width:2px;border-radius:10px;
   font-size:8px;line-height:1.2;text-align:left;transform:none;
   box-shadow:3px 3px 0 var(--c-shadow);
@@ -510,8 +513,8 @@ body.touch-mode .pause-map-frozen span{display:inline;font-size:8px}
 
 body.touch-mode .pause-map-strata{
   display:block;
-  right:calc(10px + env(safe-area-inset-right));
-  top:calc(68px + env(safe-area-inset-top));
+  right:calc(10px + var(--sa-right));
+  top:calc(68px + var(--sa-top));
   width:min(206px,52vw);padding:6px 9px 7px;border-width:2px;border-radius:12px;
   transform:none;
   box-shadow:3px 3px 0 var(--c-shadow),0 10px 22px rgba(0,0,0,.2);
@@ -525,7 +528,7 @@ body.touch-mode .pause-map-legend,
 body.touch-mode .pause-map-hint{display:none!important}
 
 body.touch-mode .pause-map-actions{
-  bottom:calc(12px + env(safe-area-inset-bottom));
+  bottom:calc(12px + var(--sa-bottom));
   width:min(444px,calc(100% - 24px));gap:8px;
 }
 body.touch-mode .pause-map-actions button{
@@ -533,7 +536,7 @@ body.touch-mode .pause-map-actions button{
   font-size:12px;box-shadow:3px 4px 0 rgba(8,7,5,.7);
 }
 body.touch-mode .pause-map-range{
-  bottom:calc(12px + env(safe-area-inset-bottom) + 57px);
+  bottom:calc(12px + var(--sa-bottom) + 57px);
   padding:2px 3px 2px 8px;
 }
 
@@ -548,3 +551,120 @@ body.touch-mode .pause-map-range{
 @media (max-height:520px){
   body.touch-mode .menu-extra>.secondary{min-height:0;padding-top:4px;padding-bottom:4px}
 }
+/* 手机横屏只有 390px 高：把菜单再压一档，别让最下面两张卡被裁掉。 */
+@media (max-height:420px){
+  body.touch-mode .menu-copy{
+    padding-top:calc(58px + var(--sa-top));
+    padding-bottom:calc(16px + var(--sa-bottom));
+  }
+  body.touch-mode .mission-logo{max-height:56px}
+  body.touch-mode .menu h1.mission-title{margin:2px 0 0}
+  body.touch-mode .menu-nav{gap:6px}
+  body.touch-mode .menu-settings{gap:6px}
+  body.touch-mode .menu-extra{gap:6px}
+  body.touch-mode .menu-footer{display:none}
+}
+
+/* TOUCH COUNTDOWN / EQUIPMENT RAIL
+   The desktop wave strip becomes the phone's bottom countdown line. The bag and
+   opening-distance cells leave that line and stack above the movement pad, so the
+   three ETAs get the full width they need without covering the action thumb. */
+body.touch-mode .wave-hud{
+  display:grid;left:50%;bottom:calc(10px + var(--sa-bottom));
+  width:min(520px,calc(100% - 324px));padding:4px 8px 5px;
+  transform:translateX(-50%);z-index:2;
+  background:none;border:0;border-radius:0;box-shadow:none;
+  text-align:left;
+}
+body.touch-mode .wave-hud::before{bottom:-4px}
+body.touch-mode .wave-hud::after{top:-4px}
+body.touch-mode .wave-head{display:none}
+body.touch-mode .wave-row{
+  grid-template-columns:auto auto auto;grid-template-areas:"label value unit";
+  align-items:baseline;justify-content:start;column-gap:4px;
+  padding:2px 0 2px 8px;margin:0;
+}
+body.touch-mode .wave-row>span{font-size:8.5px;letter-spacing:.6px;gap:4px}
+body.touch-mode .wave-row>span::after{display:none}
+body.touch-mode .wave-row>b{margin-top:0;font-size:18px;letter-spacing:0}
+body.touch-mode .wave-row>small{align-self:baseline;margin-bottom:1px;font-size:7.5px}
+
+body.touch-mode .touch-dock{
+  left:calc(14px + var(--sa-left));bottom:calc(152px + var(--sa-bottom));
+  transform:none;width:128px;max-width:none;
+  display:flex;flex-direction:column;align-items:stretch;flex-wrap:nowrap;
+  gap:4px;padding:5px 7px 5px 8px;
+  border:0;border-left:1px solid var(--touch-line-soft);
+  background:none;
+  box-shadow:none;backdrop-filter:none;
+}
+body.touch-mode .touch-bags,body.touch-mode .touch-distance{width:100%}
+body.touch-mode .touch-bags button{flex:1;min-width:0;height:34px;padding:0 2px;gap:4px}
+body.touch-mode .touch-distance{justify-content:space-between;gap:0}
+body.touch-mode .touch-distance button{width:26px;flex:0 0 26px;height:34px}
+body.touch-mode .touch-distance b{min-width:0;flex:1;font-size:10px;line-height:34px}
+body.touch-mode .touch-filler{font-size:7px;line-height:1.2;letter-spacing:0}
+
+@media (orientation:portrait){
+  body.touch-mode .wave-hud{
+    left:calc(12px + var(--sa-left));right:calc(12px + var(--sa-right));width:auto;
+    bottom:calc(200px + var(--sa-bottom));
+    transform:none;padding:5px 8px 6px;
+  }
+  body.touch-mode .touch-dock{
+    left:calc(14px + var(--sa-left));bottom:calc(278px + var(--sa-bottom));
+    transform:none;width:128px;max-width:calc(100% - 24px);
+    flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:4px;
+    padding:5px 7px 5px 8px;border-left:1px solid var(--touch-line-soft);
+    border-right:0;
+  }
+  body.touch-mode .touch-bags,body.touch-mode .touch-distance{width:100%}
+  body.touch-mode .touch-bags button{flex:1;min-width:0;padding:0 2px}
+  body.touch-mode .touch-distance{min-width:0;justify-content:space-between;gap:0}
+  body.touch-mode .touch-distance button{width:26px;flex:0 0 26px}
+  body.touch-mode .touch-distance b{flex:1;min-width:0}
+  body.touch-mode .touch-filler{display:block}
+  body.touch-mode .touch-status{
+    top:auto;left:auto;right:calc(12px + var(--sa-right));
+    bottom:calc(278px + var(--sa-bottom));transform:none;
+    min-width:0;max-width:calc(100% - 168px);
+  }
+}
+@media (max-width:380px){
+  body.touch-mode .wave-row{padding-left:5px;column-gap:3px}
+  body.touch-mode .wave-row>span{font-size:8px;letter-spacing:.2px;gap:3px}
+  body.touch-mode .wave-row>b{font-size:16px}
+}
+@media (max-height:380px){
+  body.touch-mode .wave-hud{bottom:calc(8px + var(--sa-bottom));padding:3px 7px 4px}
+  body.touch-mode .wave-row{padding-top:2px;padding-bottom:2px}
+  body.touch-mode .wave-row>b{font-size:17px}
+  body.touch-mode .touch-dock{
+    bottom:calc(132px + var(--sa-bottom));padding:4px 6px 4px 7px;gap:3px;
+  }
+  body.touch-mode .touch-bags button,body.touch-mode .touch-distance button{height:30px}
+  body.touch-mode .touch-distance b{line-height:30px}
+  body.touch-mode .touch-filler{display:none}
+}
+@media (max-height:340px) and (orientation:landscape){
+  body.touch-mode .touch-dock{
+    left:calc(14px + var(--sa-left));bottom:calc(132px + var(--sa-bottom));
+    transform:none;width:max-content;max-width:calc(100% - 168px);
+    flex-direction:row;align-items:center;flex-wrap:nowrap;gap:4px 6px;
+    padding:4px 8px;border-left:1px solid var(--touch-line-soft);
+    border-right:1px solid var(--touch-line-soft);
+  }
+  body.touch-mode .touch-bags,body.touch-mode .touch-distance{width:auto}
+  body.touch-mode .touch-bags button{flex:0 0 auto;min-width:44px;padding:0 6px}
+  body.touch-mode .touch-distance{min-width:96px;gap:0}
+  body.touch-mode .touch-distance button{flex:0 0 26px}
+  body.touch-mode .touch-distance b{flex:0 0 auto;min-width:40px}
+}
+/* With assists on, the route card grows past the equipment rail. Slide the rail
+   clear of it instead of hiding the assist readout. */
+@media (orientation:landscape){
+  body.touch-mode:has(#assistHud:not([hidden])) .touch-dock{
+    left:calc(160px + var(--sa-left));
+  }
+}
+
